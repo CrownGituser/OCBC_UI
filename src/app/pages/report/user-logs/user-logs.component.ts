@@ -72,17 +72,45 @@ export class UserLogsComponent implements OnInit {
     private messageService: MessageService,
     private datePipe: DatePipe,
   ) { }
-  ngOnInit(): void {
-    this.LogReportForm = this.formBuilder.group({
-      DATEFROM: ['', Validators.required],
-      DATETO: ['', Validators.required],
-      ActiivtyID: ['', Validators.required],
-      User_Token: localStorage.getItem('User_Token'),
-      CreatedBy: localStorage.getItem('UserID')
-    });
-    this.LogReportForm.controls['ActiivtyID'].setValue('');
-    this.BindHeader(this._StatusList, this._StatusList);
-  }
+
+ngOnInit(): void {
+  this.LogReportForm = this.formBuilder.group({
+    DATEFROM: ['', Validators.required],
+    DATETO: ['', Validators.required],
+    ActiivtyID: ['', Validators.required],
+    User_Token: localStorage.getItem('User_Token'),
+    CreatedBy: localStorage.getItem('UserID')
+  });
+
+  this.LogReportForm.controls['ActiivtyID'].setValue('');
+  this.BindHeader(this._StatusList, this._StatusList);
+
+  
+  this.LogReportForm.get('ActiivtyID')?.valueChanges.subscribe(() => {
+    this.clearLogTable();
+  });
+
+  this.LogReportForm.get('DATEFROM')?.valueChanges.subscribe(() => {
+    this.clearLogTable();
+  });
+
+  this.LogReportForm.get('DATETO')?.valueChanges.subscribe(() => {
+    this.clearLogTable();
+  });
+}
+
+
+private clearLogTable() {
+  this.formattedData = [];
+  this.immutableFormattedData = [];
+  this._FilteredList = [];
+  this._StatusList = [];
+
+  this.first = 0;
+  this.loading = false;
+  this.noDataMessage = '';
+  this.rows = 10;
+}
 
 
 
@@ -199,57 +227,109 @@ export class UserLogsComponent implements OnInit {
     return this.LogReportForm.valid
   }
 
-  getLogList() {
-    debugger
-    const fromDate = this.LogReportForm.value.DATEFROM
-      ? this.datePipe.transform(this.LogReportForm.value.DATEFROM, 'yyyy-MM-dd')
-      : '';
-    const toDate = this.LogReportForm.value.DATETO
-      ? this.datePipe.transform(this.LogReportForm.value.DATETO, 'yyyy-MM-dd')
-      : '';
+  // getLogList() {
+  //   debugger
+  //   const fromDate = this.LogReportForm.value.DATEFROM
+  //     ? this.datePipe.transform(this.LogReportForm.value.DATEFROM, 'yyyy-MM-dd')
+  //     : '';
+  //   const toDate = this.LogReportForm.value.DATETO
+  //     ? this.datePipe.transform(this.LogReportForm.value.DATETO, 'yyyy-MM-dd')
+  //     : '';
 
-    const activityId = this.LogReportForm.value.ActiivtyID || '';
-    const userId = localStorage.getItem('UserID');
-    const userToken = localStorage.getItem('User_Token') || '';
+  //   const activityId = this.LogReportForm.value.ActiivtyID || '';
+  //   const userId = localStorage.getItem('UserID');
+  //   const userToken = localStorage.getItem('User_Token') || '';
 
-    const apiUrl = `${this._global.baseAPIUrl}Report/GetActivityDetails`;
+  //   const apiUrl = `${this._global.baseAPIUrl}Report/GetActivityDetails`;
 
-    let params = new HttpParams()
-      .set('user_Token', userToken)
-      .set('FromDate', fromDate)
-      .set('ToDate', toDate)
-      .set('UserId', userId)
-      .set('Activity', activityId);
+  //   let params = new HttpParams()
+  //     .set('user_Token', userToken)
+  //     .set('FromDate', fromDate)
+  //     .set('ToDate', toDate)
+  //     .set('UserId', userId)
+  //     .set('Activity', activityId);
 
-    this.loading = true;
-    this._onlineExamService.getData(apiUrl, params)
-      .subscribe(
-        (data: any[]) => {
-          this.loading = false;
+  //   this.loading = true;
+  //   this._onlineExamService.getData(apiUrl, params)
+  //     .subscribe(
+  //       (data: any[]) => {
+  //         this.loading = false;
 
-          if (Array.isArray(data) && data.length > 0) {
-            debugger
-            this.noDataMessage = '';
-            this._StatusList = data;
-            this._FilteredList = data;
-            this.prepareTableData(this._StatusList, this._FilteredList);
-          } else {
-            this.noDataMessage = `No records found for activity "${activityId || 'Selected'}"`;
-            this._StatusList = [];
-            this._FilteredList = [];
-            this.prepareTableData([], []);
-          }
-        },
-        (error) => {
-          this.loading = false;
-          console.error('Error fetching log data', error);
-          this.noDataMessage = 'Error loading data. Please try again.';
-          this.formattedData = [];
-        }
-      );
-  }
+  //         if (Array.isArray(data) && data.length > 0) {
+  //           debugger
+  //           this.noDataMessage = '';
+  //           this._StatusList = data;
+  //           this._FilteredList = data;
+  //           this.prepareTableData(this._StatusList, this._FilteredList);
+  //         } else {
+  //           this.noDataMessage = `No records found for activity "${activityId || 'Selected'}"`;
+  //           this._StatusList = [];
+  //           this._FilteredList = [];
+  //           this.prepareTableData([], []);
+  //         }
+  //       },
+  //       (error) => {
+  //         this.loading = false;
+  //         console.error('Error fetching log data', error);
+  //         this.noDataMessage = 'Error loading data. Please try again.';
+  //         this.formattedData = [];
+  //       }
+  //     );
+  // }
 
 
+getLogList(formData?: any) {
+  debugger;
+
+  const formValue = formData || this.LogReportForm.value;
+
+  const fromDate = formValue.DATEFROM
+    ? this.datePipe.transform(formValue.DATEFROM, 'yyyy-MM-dd')
+    : '';
+  const toDate = formValue.DATETO
+    ? this.datePipe.transform(formValue.DATETO, 'yyyy-MM-dd')
+    : '';
+
+  const activityId = formValue.ActiivtyID || '';
+  const userId = localStorage.getItem('UserID');
+  const userToken = localStorage.getItem('User_Token') || '';
+
+  const apiUrl = `${this._global.baseAPIUrl}Report/GetActivityDetails`;
+
+  let params = new HttpParams()
+    .set('user_Token', userToken)
+    .set('FromDate', fromDate)
+    .set('ToDate', toDate)
+    .set('UserId', userId)
+    .set('Activity', activityId);
+
+  this.loading = true;
+
+  this._onlineExamService.getData(apiUrl, params).subscribe(
+    (data: any[]) => {
+      this.loading = false;
+
+      if (Array.isArray(data) && data.length > 0) {
+        debugger;
+        this.noDataMessage = '';
+        this._StatusList = data;
+        this._FilteredList = data;
+        this.prepareTableData(this._StatusList, this._FilteredList);
+      } else {
+        this.noDataMessage = `No records found for activity "${activityId || 'Selected'}"`;
+        this._StatusList = [];
+        this._FilteredList = [];
+        this.prepareTableData([], []);
+      }
+    },
+    (error) => {
+      this.loading = false;
+      console.error('Error fetching log data', error);
+      this.noDataMessage = 'Error loading data. Please try again.';
+      this.formattedData = [];
+    }
+  );
+}
   paginate(e) {
     this.first = e.first;
     this.rows = e.rows;

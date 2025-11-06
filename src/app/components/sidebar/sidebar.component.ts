@@ -577,65 +577,65 @@ export class SidebarComponent implements OnInit {
     });
   }
 
-getRightList() {
-  debugger;
-  const apiUrl =
-    this._global.baseAPIUrl +
-    "Role/GetRightList?ID=" +
-    Number(localStorage.getItem('sysRoleID')) +
-    "&user_Token=" + localStorage.getItem('User_Token');
+  getRightList() {
+    debugger;
+    const apiUrl =
+      this._global.baseAPIUrl +
+      "Role/GetRightList?ID=" +
+      Number(localStorage.getItem('sysRoleID')) +
+      "&user_Token=" + localStorage.getItem('User_Token');
 
-  this._onlineExamService.getAllData(apiUrl).subscribe((data: []) => {
-    this._RList = data;
+    this._onlineExamService.getAllData(apiUrl).subscribe((data: []) => {
+      this._RList = data;
 
-    // reset all rights to "0"
-    localStorage.setItem('Download', "0");
-    localStorage.setItem('Delete', "0");
-    localStorage.setItem('Email', "0");
-    localStorage.setItem('Link', "0");
-    localStorage.setItem('Edit', "0");
-    localStorage.setItem('Document View', "0");
-    localStorage.setItem('Refiling', "0");
-    localStorage.setItem('Retrival', "0");
-    localStorage.setItem('Invetory', "0");
-    localStorage.setItem('Destruction Edit', "0"); 
+      // reset all rights to "0"
+      localStorage.setItem('Download', "0");
+      localStorage.setItem('Delete', "0");
+      localStorage.setItem('Email', "0");
+      localStorage.setItem('Link', "0");
+      localStorage.setItem('Edit', "0");
+      localStorage.setItem('Document View', "0");
+      localStorage.setItem('Refiling', "0");
+      localStorage.setItem('Retrival', "0");
+      localStorage.setItem('Invetory', "0");
+      localStorage.setItem('Destruction Edit', "0");
 
-    this._RList.forEach((item) => {
-      if (item.page_right == "Download") {
-        localStorage.setItem('Download', item.isChecked);
-      }
-      if (item.page_right == "Delete") {
-        localStorage.setItem('Delete', item.isChecked);
-      }
-      if (item.page_right == "Link") {
-        localStorage.setItem('Link', item.isChecked);
-      }
-      if (item.page_right == "Email") {
-        localStorage.setItem('Email', item.isChecked);
-      }
-      if (item.page_right == "Edit") {
-        localStorage.setItem('Edit', item.isChecked);
-      }
-      if (item.page_right == "Document View") {
-        localStorage.setItem('Document View', item.isChecked);
-      }
-      if (item.page_right == "Refiling") {
-        localStorage.setItem('Refiling', item.isChecked);
-      }
-      if (item.page_right == "Retrival") {
-        localStorage.setItem('Retrival', item.isChecked);
-      }
-      if (item.page_right == "Invetory") {
-        localStorage.setItem('Invetory', item.isChecked);
-      }
-      if (item.page_right == "Destruction Edit") {  
-        localStorage.setItem('Destruction Edit', item.isChecked);
-      }
+      this._RList.forEach((item) => {
+        if (item.page_right == "Download") {
+          localStorage.setItem('Download', item.isChecked);
+        }
+        if (item.page_right == "Delete") {
+          localStorage.setItem('Delete', item.isChecked);
+        }
+        if (item.page_right == "Link") {
+          localStorage.setItem('Link', item.isChecked);
+        }
+        if (item.page_right == "Email") {
+          localStorage.setItem('Email', item.isChecked);
+        }
+        if (item.page_right == "Edit") {
+          localStorage.setItem('Edit', item.isChecked);
+        }
+        if (item.page_right == "Document View") {
+          localStorage.setItem('Document View', item.isChecked);
+        }
+        if (item.page_right == "Refiling") {
+          localStorage.setItem('Refiling', item.isChecked);
+        }
+        if (item.page_right == "Retrival") {
+          localStorage.setItem('Retrival', item.isChecked);
+        }
+        if (item.page_right == "Invetory") {
+          localStorage.setItem('Invetory', item.isChecked);
+        }
+        if (item.page_right == "Destruction Edit") {
+          localStorage.setItem('Destruction Edit', item.isChecked);
+        }
+      });
+
+      this._commonService.setRightList(this._RList);
     });
-
-    this._commonService.setRightList(this._RList);
-  });
-}
+  }
 
 
   onMouseEnterSidenav() {

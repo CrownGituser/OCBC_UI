@@ -85,135 +85,217 @@ export class WarehouseLocationUpdateFormComponent implements OnInit {
     return this.AddFileInwardForm.controls;
   }
 
-  // SaveData() {
+ 
+
+  // SaveData(): void {
   //   debugger;
   //   this.submitted = true;
+
   //   if (this.AddFileInwardForm.valid) {
-  //     const apiUrl = this._global.baseAPIUrl + "BranchInward/WarhouseLocationUpdatesef";
-  //     this._onlineExamService
-  //       .postData(
-  //         {
-  //           ...this.AddFileInwardForm.value,
-  //         },
-  //         apiUrl
-  //       )
-  //       .subscribe((data: {}) => {
+  //     const formData = this.AddFileInwardForm.value;
 
-  //         console.log(data);
-  //         if (data == "Carton No Already Exist") {
-  //           this.ShowErrormessage(data);
-  //           return;
-  //         }
-  //         else if (data == "Carton Number Not Found") {
-  //           this.ShowErrormessage(data);
-  //           return;
-  //         }
-  //         else if (data == "Carton No Not Found In Batch") {
-  //           this.ShowErrormessage(data);
-  //           return;
-  //         }
-  //         else if (data == "Carton No Not Found In Warehouse") {
-  //           this.ShowErrormessage(data);
-  //           return;
-  //         }
+  //     const requestPayload = {
+  //       requestNumber: formData.requestId,
+  //       cartonNumber: formData.cartonNo,
+  //       location: formData.location,
+  //       warehouseId: formData.warehouseId,
+  //       CreatedBy: formData.UserID,
+  //       User_Token: formData.User_Token,
+  //     };
 
-  //         this.ShowMessage(data);
+  //     const apiUrl =
+  //       this._global.baseAPIUrl + "Refilling/WarhouseReturnItemLocationUpdate";
 
-  //         this.GetBatchDetails();
-  //         this.AllLanData = null;
-  //         this.fileBarcodeList = [];
-  //        // this.AddFileInwardForm.controls["warehouseId"].setValue("");
-  //         this.AddFileInwardForm.controls["cartonNo"].setValue("");
-  //       //  this.AddFileInwardForm.controls["location"].setValue("");
+  //     this._onlineExamService.postData(requestPayload, apiUrl).subscribe(
+  //       (response: any) => {
+  //         const message = response || "No response from server.";
+  //         const isSuccess = message.toLowerCase().includes("success");
+
+  //         this.toastr.show(
+  //           `<div class="alert-text"></div>
+  //          <span class="alert-title ${
+  //            isSuccess ? "success" : "danger"
+  //          }" data-notify="title">
+  //            ${isSuccess ? "Success!" : "Failed!"}
+  //          </span>
+  //          <span data-notify="message"> ${message} </span>`,
+  //           "",
+  //           {
+  //             timeOut: 3000,
+  //             closeButton: true,
+  //             enableHtml: true,
+  //             tapToDismiss: false,
+  //             titleClass: `alert-title ${isSuccess ? "success" : "danger"}`,
+  //             positionClass: "toast-top-center",
+  //             toastClass: `ngx-toastr alert alert-dismissible alert-${
+  //               isSuccess ? "success" : "danger"
+  //             } alert-notify`,
+  //           }
+  //         );
+
+  //         if (isSuccess) {
+  //           this.GetBatchDetails();
+  //           this.AllLanData = null;
+  //           this.fileBarcodeList = [];
+  //           this.AddFileInwardForm.controls["cartonNo"].setValue("");
+  //           // this.AddFileInwardForm.controls["location"].setValue("");
+  //           //  this.AddFileInwardForm.controls["warehouseId"].setValue("");
+  //         }
+  //         this.location.back();
+
   //         this.submitted = false;
-  //       });
+  //       },
+  //       (error) => {
+  //         const errorMessage =
+  //           error?.error?.Message || "Server error occurred.";
+
+  //         this.toastr.show(
+  //           `<div class="alert-text"></div>
+  //    <span class="alert-title danger" data-notify="title"> Error! </span>
+  //    <span data-notify="message"> ${errorMessage} </span>`,
+  //           "",
+  //           {
+  //             timeOut: 3000,
+  //             closeButton: true,
+  //             enableHtml: true,
+  //             tapToDismiss: false,
+  //             titleClass: "alert-title danger",
+  //             positionClass: "toast-top-center",
+  //             toastClass:
+  //               "ngx-toastr alert alert-dismissible alert-danger alert-notify",
+  //           }
+  //         );
+
+  //         this.submitted = false;
+  //       }
+  //     );
   //   }
   // }
 
+
   SaveData(): void {
-    debugger;
-    this.submitted = true;
+  debugger;
+  this.submitted = true;
 
-    if (this.AddFileInwardForm.valid) {
-      const formData = this.AddFileInwardForm.value;
+  if (!this.AddFileInwardForm.valid) {
+    this.toastr.show(
+      '<div class="alert-text"></div><span class="alert-title" data-notify="title">Validation ! </span>' +
+        '<span data-notify="message"> Please fill required fields. </span>',
+      '',
+      {
+        timeOut: 3000,
+      closeButton: true,
+        enableHtml: true,
+        tapToDismiss: false,
+        titleClass: 'alert-title',
+        positionClass: 'toast-top-center',
+        toastClass: 'ngx-toastr alert alert-dismissible alert-danger alert-notify',
+      }
+    );
+    this.submitted = false;
+    return;
+  }
 
-      const requestPayload = {
-        requestNumber: formData.requestId,
-        cartonNumber: formData.cartonNo,
-        location: formData.location,
-        warehouseId: formData.warehouseId,
-        CreatedBy: formData.UserID,
-        User_Token: formData.User_Token,
-      };
+  const formData = this.AddFileInwardForm.value;
+  const requestPayload = {
+    requestNumber: formData.requestId,
+    cartonNumber: formData.cartonNo,
+    location: formData.location,
+    warehouseId: formData.warehouseId,
+    CreatedBy: formData.UserID,
+    User_Token: formData.User_Token,
+  };
 
-      const apiUrl =
-        this._global.baseAPIUrl + "Refilling/WarhouseReturnItemLocationUpdate";
+  const apiUrl = this._global.baseAPIUrl + 'Refilling/WarhouseReturnItemLocationUpdate';
 
-      this._onlineExamService.postData(requestPayload, apiUrl).subscribe(
-        (response: any) => {
-          const message = response || "No response from server.";
-          const isSuccess = message.toLowerCase().includes("success");
+  // disable button via submitted flag while request is in-progress
+  this.submitted = true;
 
-          this.toastr.show(
-            `<div class="alert-text"></div>
-           <span class="alert-title ${
-             isSuccess ? "success" : "danger"
-           }" data-notify="title">
-             ${isSuccess ? "Success!" : "Failed!"}
-           </span>
-           <span data-notify="message"> ${message} </span>`,
-            "",
-            {
-              timeOut: 3000,
-              closeButton: true,
-              enableHtml: true,
-              tapToDismiss: false,
-              titleClass: `alert-title ${isSuccess ? "success" : "danger"}`,
-              positionClass: "toast-top-center",
-              toastClass: `ngx-toastr alert alert-dismissible alert-${
-                isSuccess ? "success" : "danger"
-              } alert-notify`,
-            }
-          );
+  this._onlineExamService.postData(requestPayload, apiUrl).subscribe(
+    (response: any) => {
+      const message = response || 'No response from server.';
+      const isSuccess = (message + '').toLowerCase().includes('success');
 
-          if (isSuccess) {
-            this.GetBatchDetails();
-            this.AllLanData = null;
-            this.fileBarcodeList = [];
-            this.AddFileInwardForm.controls["cartonNo"].setValue("");
-            // this.AddFileInwardForm.controls["location"].setValue("");
-            //  this.AddFileInwardForm.controls["warehouseId"].setValue("");
-          }
-          this.location.back();
-
-          this.submitted = false;
-        },
-        (error) => {
-          const errorMessage =
-            error?.error?.Message || "Server error occurred.";
-
-          this.toastr.show(
-            `<div class="alert-text"></div>
-     <span class="alert-title danger" data-notify="title"> Error! </span>
-     <span data-notify="message"> ${errorMessage} </span>`,
-            "",
-            {
-              timeOut: 3000,
-              closeButton: true,
-              enableHtml: true,
-              tapToDismiss: false,
-              titleClass: "alert-title danger",
-              positionClass: "toast-top-center",
-              toastClass:
-                "ngx-toastr alert alert-dismissible alert-danger alert-notify",
-            }
-          );
-
-          this.submitted = false;
+      this.toastr.show(
+        `<div class="alert-text"></div>
+         <span class="alert-title ${isSuccess ? 'success' : 'danger'}" data-notify="title">
+           ${isSuccess ? 'Success!' : 'Failed!'}
+         </span>
+         <span data-notify="message"> ${message} </span>`,
+        '',
+        {
+          timeOut: 3000,
+          closeButton: true,
+          enableHtml: true,
+          tapToDismiss: false,
+          titleClass: `alert-title ${isSuccess ? 'success' : 'danger'}`,
+          positionClass: 'toast-top-center',
+          toastClass: `ngx-toastr alert alert-dismissible alert-${isSuccess ? 'success' : 'danger'} alert-notify`,
         }
       );
+
+      if (isSuccess) {
+        // after successful save, re-fetch server-side batch/list for this request
+        const listApi =
+          this._global.baseAPIUrl +
+          'Refilling/GetWarehouseReturnItemLocData?request_number=' +
+          encodeURIComponent(this.AddFileInwardForm.controls['requestId'].value) +
+          '&User_Token=' +
+          encodeURIComponent(localStorage.getItem('User_Token')) +
+          '&UserID=' +
+          encodeURIComponent(localStorage.getItem('UserID'));
+
+        this._onlineExamService.getAllData(listApi).subscribe(
+          (data: any) => {
+            // update the table UI with fresh data
+            this.prepareTableData(data || [], data || []);
+
+            // if server returned no more records for this request, navigate back
+            if (!data || (Array.isArray(data) && data.length === 0)) {
+              this.location.back();
+            } else {
+              // otherwise remain on page and clear inputs for next entry
+              this.AllLanData = null;
+              this.fileBarcodeList = [];
+              this.AddFileInwardForm.controls['cartonNo'].setValue('');
+              // optional: keep warehouse/location set so user can continue scanning multiple cartons
+            }
+            this.submitted = false;
+          },
+          (err) => {
+            // if list fetch fails, keep user on page and show error
+            const errMsg = err?.error?.Message || 'Failed to refresh list after save.';
+            this.ShowErrormessage(errMsg);
+            this.submitted = false;
+          }
+        );
+      } else {
+        // save failed — remain on page for user to correct & retry
+        this.submitted = false;
+      }
+    },
+    (error) => {
+      const errorMessage = error?.error?.Message || 'Server error occurred.';
+      this.toastr.show(
+        `<div class="alert-text"></div>
+         <span class="alert-title danger" data-notify="title"> Error! </span>
+         <span data-notify="message"> ${errorMessage} </span>`,
+        '',
+        {
+          timeOut: 3000,
+          closeButton: true,
+          enableHtml: true,
+          tapToDismiss: false,
+          titleClass: 'alert-title danger',
+          positionClass: 'toast-top-center',
+          toastClass: 'ngx-toastr alert alert-dismissible alert-danger alert-notify',
+        }
+      );
+
+      this.submitted = false;
     }
-  }
+  );
+}
 
   AllData: any;
   GetrequestId() {

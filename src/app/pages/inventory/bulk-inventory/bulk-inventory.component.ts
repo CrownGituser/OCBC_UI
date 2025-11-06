@@ -75,15 +75,15 @@ export class BulkInventoryComponent implements OnInit {
       User_Token: localStorage.getItem("User_Token"),
       UserID: localStorage.getItem("UserID"),
     });
-      if (this.formattedData && this.formattedData.length > 0) {
-    const deptValue = this.formattedData[0].departmentId; 
-    console.log("rbfiufhfiuhfiuh",deptValue);
-    if (deptValue) {
-      this.AddFileInwardForm.patchValue({
-        department: deptValue
-      });
+    if (this.formattedData && this.formattedData.length > 0) {
+      const deptValue = this.formattedData[0].departmentId;
+      console.log("rbfiufhfiuhfiuh", deptValue);
+      if (deptValue) {
+        this.AddFileInwardForm.patchValue({
+          department: deptValue
+        });
+      }
     }
-  }
 
     this.GetBatchID();
     this.getCartonDetails();
@@ -188,9 +188,8 @@ export class BulkInventoryComponent implements OnInit {
       }
 
       const apiUrl = this._global.baseAPIUrl + "BranchInward/AddUpdateBulkInventory";
-      const formValue = this.AddFileInwardForm.value;
+     const formValue = this.AddFileInwardForm.getRawValue();
 
-      // ✅ build payload using only valid rows
       const payload = {
         ...formValue,
         documentType: formValue.documentType?.name || formValue.documentType,
@@ -198,7 +197,7 @@ export class BulkInventoryComponent implements OnInit {
         file: this.records.map(r => `${r.cartonNo},${r.documentTypeName},${r.detailDocumentTypeName}`)
       };
 
-      console.log("oiofij", payload);
+    console.log("oiofij", payload);
 
       await this._onlineExamService.postData(payload, apiUrl).subscribe(
         (response: any) => {
@@ -273,22 +272,22 @@ export class BulkInventoryComponent implements OnInit {
     }
   }
 
-isValidDoc(value: string): boolean {
-  debugger;
-  if (!value) return false;
+  isValidDoc(value: string): boolean {
+    if (!value) return false;
 
-  value = value.trim();
+    value = value.trim();
 
-  // Must contain only allowed characters (added space before ])
-  const allowedChars = /^[0-9a-zA-Z\u4e00-\u9fff\-\/() ]+$/; 
-  if (!allowedChars.test(value)) return false;
+    // Must contain only allowed characters (anything except comma)
+    const allowedChars = /^[^,]+$/;
+    if (!allowedChars.test(value)) return false;
 
-  // Must contain at least one letter (English or Chinese)
-  const hasLetter = /[a-zA-Z\u4e00-\u9fff]/.test(value);
-  if (!hasLetter) return false;
+    // Must contain at least one letter (English or Chinese)
+    const hasLetter = /[a-zA-Z\u4e00-\u9fff]/.test(value);
+    if (!hasLetter) return false;
 
-  return true;
-}
+    return true;
+  }
+
 
   // uploadListener($event: any): void {
   //   debugger;
@@ -411,7 +410,7 @@ isValidDoc(value: string): boolean {
   //   }
   // }
 
-  
+
   uploadListener($event: any): void {
     debugger;
     const files = $event.srcElement.files;
@@ -454,14 +453,15 @@ isValidDoc(value: string): boolean {
         }
 
         const headerLength = headersRow.length;
+        const templen = csvRecordsArray.length; 
         const csvRawRecords = this.getDataRecordsArrayFromCSVFile(csvRecordsArray, headerLength);
 
         console.log("headersRow", headersRow);
         console.log("csvRawRecords", csvRawRecords);
 
         // Validation regexes
-        const cartonNoRegex = /^[a-zA-Z0-9\-\/()]+$/; 
-        const docRegex = /^(?=.*[\p{L}])[0-9\p{L}\-\/()]+$/u; 
+        const cartonNoRegex = /^[^,]+$/;
+        const docRegex = /^(?=.*[\p{L}])[0-9\p{L}\-\/()]+$/u;
 
         const validRecords = [];
         const invalidRows: string[] = [];
@@ -479,12 +479,10 @@ isValidDoc(value: string): boolean {
 
           validRecords.push(csvRawRecords[i]); // push valid row
         }
-
-        if (invalidRows.length > 0) {
+        debugger;
+        if (validRecords.length < (templen -2)) {
           this.ShowErrormessage(
-            "Invalid data found in rows: " + invalidRows.join(", ") +
-            ". CartonNo allows only English letters, numbers, dash (-), slash (/), parentheses ( ). " +
-            "Document types allow English/Chinese letters, numbers, dash (-), slash (/), parentheses ( ), and cannot be numbers only."
+            "Invalid data in CSV File."
           );
         }
 
@@ -757,54 +755,54 @@ isValidDoc(value: string): boolean {
   immutableFormattedData: any;
   loading: boolean = true;
 
-prepareTableData(tableData, headerList) {
-  let formattedData = [];
-  let tableHeader: any = [
-    { field: "srNo", header: "SR NO", index: 1 },
-    { field: "batchId", header: "BATCH ID", index: 2 },
-    { field: "cartonNo", header: "CARTON NUMBER", index: 2 },
-    { field: "department", header: "DEPARTMENT NAME", index: 3 },
-    { field: "documentType", header: "DOUCMENT TYPE", index: 4 },
-    { field: "detailDocumentType", header: "DETAIL DOUCMENT TYPE", index: 3 },
-    { field: "status", header: "STATUS", index: 3 },
-  ];
+  prepareTableData(tableData, headerList) {
+    let formattedData = [];
+    let tableHeader: any = [
+      { field: "srNo", header: "SR NO", index: 1 },
+      { field: "batchId", header: "BATCH ID", index: 2 },
+      { field: "cartonNo", header: "CARTON NUMBER", index: 2 },
+      { field: "department", header: "DEPARTMENT NAME", index: 3 },
+      { field: "documentType", header: "DOCUMENT TYPE", index: 4 },
+      { field: "detailDocumentType", header: "DETAIL DOCUMENT TYPE", index: 3 },
+      { field: "status", header: "STATUS", index: 3 },
+    ];
 
-  tableData.forEach((el, index) => {
-    formattedData.push({
-      srNo: parseInt(index + 1),
-      batchId: el.batchId,
-      id: el.id,
-      cartonNo: el.cartonNo,
-      department: el.departmentName,
-      documentType: el.documentTypeName,
-      detailDocumentType: el.detailDocumentTypeName,
-      status: el.status,
-    });
-  });
-
-  this.headerList = tableHeader;
-  this.immutableFormattedData = JSON.parse(JSON.stringify(formattedData));
-  this.formattedData = formattedData;
-  this.loading = false;
-
- if (this.formattedData.length > 0) {
-  const deptName = this.formattedData[0].department; 
-
-  const deptItem = this.departmentDropdown.find(
-    d => d.label.toLowerCase() === deptName.toLowerCase()
-  );
-
-  if (deptItem) {
-    this.AddFileInwardForm.patchValue({
-      department: deptItem.value
+    tableData.forEach((el, index) => {
+      formattedData.push({
+        srNo: parseInt(index + 1),
+        batchId: el.batchId,
+        id: el.id,
+        cartonNo: el.cartonNo,
+        department: el.departmentName,
+        documentType: el.documentTypeName,
+        detailDocumentType: el.detailDocumentTypeName,
+        status: el.status,
+      });
     });
 
-    this.AddFileInwardForm.get('department')?.disable();
+    this.headerList = tableHeader;
+    this.immutableFormattedData = JSON.parse(JSON.stringify(formattedData));
+    this.formattedData = formattedData;
+    this.loading = false;
+
+    if (this.formattedData.length > 0) {
+      const deptName = this.formattedData[0].department;
+
+      const deptItem = this.departmentDropdown.find(
+        d => d.label.toLowerCase() === deptName.toLowerCase()
+      );
+
+      if (deptItem) {
+        this.AddFileInwardForm.patchValue({
+          department: deptItem.value
+        });
+
+        this.AddFileInwardForm.get('department')?.disable();
+      }
+    }
+
+
   }
-}
-
-
-}
 
 
 

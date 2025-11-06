@@ -34,8 +34,8 @@ export class BranchComponent implements OnInit {
   entries: number = 10;
   selected: any[] = [];
   allMappedActivities: string[] = [];
-  @ViewChild('dt') dt!: Table; 
-    @ViewChild('dtt') dtt!: Table; 
+  @ViewChild('dt') dt!: Table;
+  @ViewChild('dtt') dtt!: Table;
   temp = [];
   activeRow: any;
   SelectionType = SelectionType;
@@ -55,29 +55,29 @@ export class BranchComponent implements OnInit {
   _FilteredList: any;
   checkbox_list = [];
   isEditMode: boolean = false;
-  isEditMapPopup:boolean=false;
+  isEditMapPopup: boolean = false;
   _BranchID: any = 0;
   //showDropdown = false;
-@ViewChild('dropdownContainer') dropdownContainer!: ElementRef;
-showDropdown: boolean = false;
+  @ViewChild('dropdownContainer') dropdownContainer!: ElementRef;
+  showDropdown: boolean = false;
 
-toggleDropdown(event: Event): void {
-  event.stopPropagation(); // Prevent global click handler from immediately closing
-  this.showDropdown = !this.showDropdown;
-}
-
- @HostListener('document:click', ['$event'])
-onDocumentClick(event: MouseEvent): void {
-  const clickedInside = this.dropdownContainer?.nativeElement.contains(event.target);
-  if (!clickedInside) {
-    this.showDropdown = false;
+  toggleDropdown(event: Event): void {
+    event.stopPropagation(); // Prevent global click handler from immediately closing
+    this.showDropdown = !this.showDropdown;
   }
-}
-selectedDepartmentsLabel: string = '';
-selectedMappedDepartmentName: string | null = null;
-selectedDepartmentName: string | null = null;
-selectedMappedDepartmentId: number | null = null;
-originalActivity: string = '';
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const clickedInside = this.dropdownContainer?.nativeElement.contains(event.target);
+    if (!clickedInside) {
+      this.showDropdown = false;
+    }
+  }
+  selectedDepartmentsLabel: string = '';
+  selectedMappedDepartmentName: string | null = null;
+  selectedDepartmentName: string | null = null;
+  selectedMappedDepartmentId: number | null = null;
+  originalActivity: string = '';
 
 
 
@@ -95,7 +95,7 @@ originalActivity: string = '';
   selectedDepartments: number[] = [];
   originalMappedDepartments: number[] = [];
   approvedDepartmentIds: number[] = [];
-selectedDepartmentId: number | null = null;
+  selectedDepartmentId: number | null = null;
 
 
   constructor(
@@ -105,7 +105,7 @@ selectedDepartmentId: number | null = null;
     private _onlineExamService: OnlineExamServiceService,
     private _global: Globalconstants,
     private http: HttpClient
-  ) {}
+  ) { }
   ngOnInit() {
     this.AddBranchForm = this.formBuilder.group({
       Id: [0],
@@ -175,24 +175,24 @@ selectedDepartmentId: number | null = null;
     return isValid ? null : { whitespace: true };
   }
 
-notOnlyNumberValidator(control: FormControl) {
- const value = control.value?.trim();
+  notOnlyNumberValidator(control: FormControl) {
+    const value = control.value?.trim();
 
-  if (!value) return null;
+    if (!value) return null;
 
-  const onlyNumber = /^[0-9]+$/.test(value);
-  const hasSpecialChar = /[^a-zA-Z0-9\s]/.test(value);
+    const onlyNumber = /^[0-9]+$/.test(value);
+    const hasSpecialChar = /[^a-zA-Z0-9\s]/.test(value);
 
-  if (onlyNumber) {
-    return { onlyNumber: true };
+    if (onlyNumber) {
+      return { onlyNumber: true };
+    }
+
+    if (hasSpecialChar) {
+      return { specialCharacterNotAllowed: true };
+    }
+
+    return null;
   }
-
-  if (hasSpecialChar) {
-    return { specialCharacterNotAllowed: true };
-  }
-
-  return null;
-}
 
   //------------------Delete Department-----------------
   deleteDepartment(value: any) {
@@ -297,6 +297,7 @@ notOnlyNumberValidator(control: FormControl) {
         }
       });
   }
+  
 
   get FormControls() {
     return this.AddBranchForm.controls;
@@ -342,35 +343,44 @@ notOnlyNumberValidator(control: FormControl) {
   }
 
   downloadCSV() {
-  const data = this.dt?.filteredValue || this.formattedData;
+    const data = this.dt?.filteredValue || this.formattedData;
 
-  if (!data || data.length === 0) {
-    this.toastr.warning("No data available to export.");
-    return;
+    if (!data || data.length === 0) {
+      this.toastr.warning("No data available to export.");
+      return;
+    }
+
+    const headers = this.headerList.map(h => h.header);
+
+    const rows = data.map(row =>
+      this.headerList.map(col => {
+        let val = row[col.field];
+        return val !== null && val !== undefined ? String(val).replace(/"/g, '""') : "";
+      })
+    );
+
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map(r => r.map(x => `"${x}"`).join(",")).join("\n");
+
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = "DepartmentList.csv";
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    this.logDownloadActivity();
   }
-  const headers = this.headerList.map(h => h.header);
-
-  const rows = data.map(row =>
-    this.headerList.map(col => {
-      let val = row[col.field];
-      return val !== null && val !== undefined ? String(val).replace(/"/g, '""') : ""; // escape quotes
-    })
-  );
-  const csvContent =
-    headers.join(",") +
-    "\n" +
-    rows.map(r => r.map(x => `"${x}"`).join(",")).join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-  link.setAttribute("href", url);
-  link.setAttribute("download", "DepartmentList.csv");
-  link.style.visibility = "hidden";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  this.logDownloadActivity();
-}
 
 
 
@@ -395,7 +405,7 @@ notOnlyNumberValidator(control: FormControl) {
         DepartmentCode: el.DepartmentCode,
         DepartmentName: el.DepartmentName,
         id: el.Id,
-        CreatedDate: el.CreatedDate?this.formatDateToDDMMYYYY(el.CreatedDate) : '',
+        CreatedDate: el.CreatedDate ? this.formatDateToDDMMYYYY(el.CreatedDate) : '',
         CreatedBy: el.CreatedBy,
       });
     });
@@ -407,12 +417,12 @@ notOnlyNumberValidator(control: FormControl) {
 
 
   formatDateToDDMMYYYY(dateInput: string | Date): string {
-  const date = new Date(dateInput);
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear().toString();
-  return `${day}/${month}/${year}`;
-}
+    const date = new Date(dateInput);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString();
+    return `${day}/${month}/${year}`;
+  }
 
   searchTable($event) {
     let val = $event.target.value;
@@ -458,97 +468,97 @@ notOnlyNumberValidator(control: FormControl) {
 
 
 
-onSubmit() {
-  this.submitted = true;
+  onSubmit() {
+    this.submitted = true;
 
-  if (this.AddBranchForm.invalid) {
-    return;
-  }
-
-  const formValue = this.AddBranchForm.value;
-  const userToken = localStorage.getItem("user_Token");
-
-  const apiUrl =
-    this._global.baseAPIUrl + "DepartmentMaster/Add?user_Token=" + userToken;
-
-  this._onlineExamService.postData(formValue, apiUrl).subscribe((response: any) => {
-    const message = response?.Message || "Operation completed.";
-    const isDuplicate = message.toLowerCase().includes("already exists");
-    const title = isDuplicate ? "Warning!" : "Success!";
-    const toastClass = isDuplicate
-      ? "ngx-toastr alert alert-warning alert-notify"
-      : "ngx-toastr alert alert-success alert-notify";
-
-    this.toastr.show(
-      `<span class="alert-title">${title}</span> <span data-notify="message">${message}</span>`,
-      "",
-      {
-        timeOut: 3000,
-        closeButton: true,
-        enableHtml: true,
-        tapToDismiss: false,
-        positionClass: "toast-top-center",
-        toastClass,
-      }
-    );
-
-    if (!isDuplicate) {
-      this.geBranchList();
-      this.OnReset();
-      this.modalRef?.hide();
+    if (this.AddBranchForm.invalid) {
+      return;
     }
-  });
-}
 
+    const formValue = this.AddBranchForm.value;
+    const userToken = localStorage.getItem("user_Token");
 
+    const apiUrl =
+      this._global.baseAPIUrl + "DepartmentMaster/Add?user_Token=" + userToken;
 
+    this._onlineExamService.postData(formValue, apiUrl).subscribe((response: any) => {
+      const message = response?.Message || "Operation completed.";
+      const isDuplicate = message.toLowerCase().includes("already exists");
+      const title = isDuplicate ? "Warning!" : "Success!";
+      const toastClass = isDuplicate
+        ? "ngx-toastr alert alert-warning alert-notify"
+        : "ngx-toastr alert alert-success alert-notify";
 
-onSubmitDepartment() {
-  this.submitted = true;
+      this.toastr.show(
+        `<span class="alert-title">${title}</span> <span data-notify="message">${message}</span>`,
+        "",
+        {
+          timeOut: 3000,
+          closeButton: true,
+          enableHtml: true,
+          tapToDismiss: false,
+          positionClass: "toast-top-center",
+          toastClass,
+        }
+      );
 
-  if (this.AddBranchForm.invalid) {
-    return;
-  }
-
-  const formValue = this.AddBranchForm.value;
-  const userToken = localStorage.getItem("user_Token");
-
-  if (!formValue.Id || Number(formValue.Id) === 0) {
-    this.toastr.error("Invalid department ID for update.");
-    return;
-  }
-
-  const apiUrl =
-    this._global.baseAPIUrl + "DepartmentMaster/Update?user_Token=" + userToken;
-
-  this._onlineExamService.postData(formValue, apiUrl).subscribe((response: any) => {
-    const message = response?.Message || "Update operation completed.";
-    const isDuplicate = message.toLowerCase().includes("already exists");
-    const title = isDuplicate ? "Warning!" : "Success!";
-    const toastClass = isDuplicate
-      ? "ngx-toastr alert alert-warning alert-notify"
-      : "ngx-toastr alert alert-success alert-notify";
-
-    this.toastr.show(
-      `<span class="alert-title">${title}</span> <span data-notify="message">${message}</span>`,
-      "",
-      {
-        timeOut: 3000,
-        closeButton: true,
-        enableHtml: true,
-        tapToDismiss: false,
-        positionClass: "toast-top-center",
-        toastClass,
+      if (!isDuplicate) {
+        this.geBranchList();
+        this.OnReset();
+        this.modalRef?.hide();
       }
-    );
+    });
+  }
 
-    if (!isDuplicate) {
-      this.geBranchList();
-      this.OnReset();
-      this.modalRef?.hide();
+
+
+
+  onSubmitDepartment() {
+    this.submitted = true;
+
+    if (this.AddBranchForm.invalid) {
+      return;
     }
-  });
-}
+
+    const formValue = this.AddBranchForm.value;
+    const userToken = localStorage.getItem("user_Token");
+
+    if (!formValue.Id || Number(formValue.Id) === 0) {
+      this.toastr.error("Invalid department ID for update.");
+      return;
+    }
+
+    const apiUrl =
+      this._global.baseAPIUrl + "DepartmentMaster/Update?user_Token=" + userToken;
+
+    this._onlineExamService.postData(formValue, apiUrl).subscribe((response: any) => {
+      const message = response?.Message || "Update operation completed.";
+      const isDuplicate = message.toLowerCase().includes("already exists");
+      const title = isDuplicate ? "Warning!" : "Success!";
+      const toastClass = isDuplicate
+        ? "ngx-toastr alert alert-warning alert-notify"
+        : "ngx-toastr alert alert-success alert-notify";
+
+      this.toastr.show(
+        `<span class="alert-title">${title}</span> <span data-notify="message">${message}</span>`,
+        "",
+        {
+          timeOut: 3000,
+          closeButton: true,
+          enableHtml: true,
+          tapToDismiss: false,
+          positionClass: "toast-top-center",
+          toastClass,
+        }
+      );
+
+      if (!isDuplicate) {
+        this.geBranchList();
+        this.OnReset();
+        this.modalRef?.hide();
+      }
+    });
+  }
 
 
   deleteBrnach(id: any) {
@@ -664,7 +674,7 @@ onSubmitDepartment() {
       { field: "UserName", header: "USER NAME", index: 3 },
       { field: "DepartmentName", header: "DEPARTMENT NAME", index: 2 },
       { field: "DepartmentCode", header: "DEPARTMENT CODE", index: 2 },
-     
+
       { field: "approval", header: "AUTO APPROVAL", index: 2 },
       { field: "autoActivityApproval", header: "ACTIVITY", index: 2 },
 
@@ -679,7 +689,7 @@ onSubmitDepartment() {
         ddmID: el.userid,
         DepartmentName: el.DepartmentName,
         approval: el.isApproved === 1 ? "YES" : "NO",
-        autoActivityApproval: el.autoActivityApproval ,
+        autoActivityApproval: el.autoActivityApproval,
 
       });
     });
@@ -749,42 +759,42 @@ onSubmitDepartment() {
   }
 
 
-addBranchMapping(template: TemplateRef<any>, isEdit: boolean = false) {
-  //this.isEditMapPopup = isEdit;
- 
-  if (!isEdit) {
-    //this.AddBranchMappingForm.get("UserID")?.enable();
-    this.AddBranchMappingForm.reset({
-      User_Token: localStorage.getItem("User_Token"),
-      UserID: '',
-      approval: null,
-      autoActivityApproval: ''
+  addBranchMapping(template: TemplateRef<any>, isEdit: boolean = false) {
+    //this.isEditMapPopup = isEdit;
+
+    if (!isEdit) {
+      //this.AddBranchMappingForm.get("UserID")?.enable();
+      this.AddBranchMappingForm.reset({
+        User_Token: localStorage.getItem("User_Token"),
+        UserID: '',
+        approval: null,
+        autoActivityApproval: ''
+      });
+      // ✅ Clear custom UI states
+      this.submitted = false;
+      this.departmentsArray.clear();
+      this.selectedDepartmentsLabel = '';
+      this.showDropdown = false;
+      this.originalMappedDepartments = [];
+      this.selectedMappedDepartmentId = null;
+      this.selectedMappedDepartmentName = null;
+      this.selectedDepartmentName = null;
+      this.originalActivity = null;
+
+      this.AddBranchMappingForm.get("UserID")?.enable();
+    }
+
+    this.getDepartmentNamesList();
+
+    this.modalRef = this.modalService.show(template, {
+      backdrop: true,
+      ignoreBackdropClick: false,
     });
-     // ✅ Clear custom UI states
-    this.submitted = false;
-    this.departmentsArray.clear();
-    this.selectedDepartmentsLabel = '';
-    this.showDropdown = false;
-    this.originalMappedDepartments = [];
-    this.selectedMappedDepartmentId = null;
-    this.selectedMappedDepartmentName = null;
-    this.selectedDepartmentName = null;
-    this.originalActivity = null;
-
-    this.AddBranchMappingForm.get("UserID")?.enable();
+    const subscription = this.modalService.onHidden.subscribe(() => {
+      this.onClose();
+      subscription.unsubscribe();
+    });
   }
-
-  this.getDepartmentNamesList();
-
-  this.modalRef = this.modalService.show(template, {
-    backdrop: true,
-    ignoreBackdropClick: false,
-  });
-  const subscription = this.modalService.onHidden.subscribe(() => {
-    this.onClose();
-    subscription.unsubscribe();
-  });
-}
 
   get departmentsArray(): FormArray {
     return this.AddBranchMappingForm.get("departmentsArray") as FormArray;
@@ -793,80 +803,80 @@ addBranchMapping(template: TemplateRef<any>, isEdit: boolean = false) {
   isChecked(id: number): boolean {
     return this.departmentsArray.value.includes(id);
   }
-onCheckboxChange(event: any) {
-  const id = +event.target.value;
+  onCheckboxChange(event: any) {
+    const id = +event.target.value;
 
-  // Don't allow change if the checkbox is disabled
-  if (this.originalMappedDepartments.includes(id) && id !== this.selectedMappedDepartmentId) {
-    return;
-  }
-
-  if (event.target.checked) {
-    if (!this.departmentsArray.value.includes(id)) {
-      this.departmentsArray.push(new FormControl(id));
+    // Don't allow change if the checkbox is disabled
+    if (this.originalMappedDepartments.includes(id) && id !== this.selectedMappedDepartmentId) {
+      return;
     }
-  } else {
-    const index = this.departmentsArray.controls.findIndex(
-      (x) => x.value === id
-    );
-    if (index >= 0) {
-      this.departmentsArray.removeAt(index);
-    }
-  }
 
-  this.updateSelectAllState();
-  this.updateSelectedDepartmentsLabel();
-}
-
-
-updateSelectedDepartmentsLabel() {
-  const selectedIds = this.departmentsArray.value;
-
-  const editableSelectedIds = selectedIds.filter(
-    (id: number) =>
-      !this.originalMappedDepartments.includes(id) || id === this.selectedMappedDepartmentId
-  );
-
-  const selectedNames = this.departmentList
-    .filter((dept) => editableSelectedIds.includes(dept.Id))
-    .map((dept) => dept.DepartmentName);
-
-  if (selectedNames.length > 1) {
-    this.selectedDepartmentsLabel = `${selectedNames.length} Departments has been selected`;
-  } else {
-    this.selectedDepartmentsLabel = selectedNames.join(', ');
-  }
-}
-
-
-toggleSelectAll(event: any) {
-  const isChecked = event.target.checked;
-
-  if (isChecked) {
-    // Add only the departments that are not already mapped
-    this.departmentList.forEach((dept) => {
-      if (
-        !this.originalMappedDepartments.includes(dept.Id) &&
-        !this.departmentsArray.value.includes(dept.Id)
-      ) {
-        this.departmentsArray.push(new FormControl(dept.Id));
+    if (event.target.checked) {
+      if (!this.departmentsArray.value.includes(id)) {
+        this.departmentsArray.push(new FormControl(id));
       }
-    });
-    this.isAllSelected = true;
-  } else {
-    // Remove only departments that were not originally mapped
-    const filtered = this.departmentsArray.value.filter((id: number) =>
-      this.originalMappedDepartments.includes(id)
+    } else {
+      const index = this.departmentsArray.controls.findIndex(
+        (x) => x.value === id
+      );
+      if (index >= 0) {
+        this.departmentsArray.removeAt(index);
+      }
+    }
+
+    this.updateSelectAllState();
+    this.updateSelectedDepartmentsLabel();
+  }
+
+
+  updateSelectedDepartmentsLabel() {
+    const selectedIds = this.departmentsArray.value;
+
+    const editableSelectedIds = selectedIds.filter(
+      (id: number) =>
+        !this.originalMappedDepartments.includes(id) || id === this.selectedMappedDepartmentId
     );
 
-    this.departmentsArray.clear();
-    filtered.forEach((id: number) => {
-      this.departmentsArray.push(new FormControl(id));
-    });
+    const selectedNames = this.departmentList
+      .filter((dept) => editableSelectedIds.includes(dept.Id))
+      .map((dept) => dept.DepartmentName);
 
-    this.isAllSelected = false;
+    if (selectedNames.length > 1) {
+      this.selectedDepartmentsLabel = `${selectedNames.length} Departments has been selected`;
+    } else {
+      this.selectedDepartmentsLabel = selectedNames.join(', ');
+    }
   }
-}
+
+
+  toggleSelectAll(event: any) {
+    const isChecked = event.target.checked;
+
+    if (isChecked) {
+      // Add only the departments that are not already mapped
+      this.departmentList.forEach((dept) => {
+        if (
+          !this.originalMappedDepartments.includes(dept.Id) &&
+          !this.departmentsArray.value.includes(dept.Id)
+        ) {
+          this.departmentsArray.push(new FormControl(dept.Id));
+        }
+      });
+      this.isAllSelected = true;
+    } else {
+      // Remove only departments that were not originally mapped
+      const filtered = this.departmentsArray.value.filter((id: number) =>
+        this.originalMappedDepartments.includes(id)
+      );
+
+      this.departmentsArray.clear();
+      filtered.forEach((id: number) => {
+        this.departmentsArray.push(new FormControl(id));
+      });
+
+      this.isAllSelected = false;
+    }
+  }
 
 
   updateSelectAllState() {
@@ -903,162 +913,166 @@ toggleSelectAll(event: any) {
     this.AddBranchMappingForm.markAsUntouched();
   }
 
- downloadCSVDeptMapping() {
+  downloadCSVDeptMapping() {
     const data = this.dtt?.filteredValue || this.formattedData1;
 
     if (!data || data.length === 0) {
       alert("No data available to export.");
       return;
     }
+
     const headers = this.headerList1.map(h => h.header);
 
     const rows = data.map(row =>
       this.headerList1.map(col => {
         let val = row[col.field];
-        return val !== null && val !== undefined ? String(val).replace(/"/g, '""') : ""; // Escape quotes
+        return val !== null && val !== undefined ? String(val).replace(/"/g, '""') : "";
       })
     );
     const csvContent =
       headers.join(",") +
       "\n" +
       rows.map(r => r.map(x => `"${x}"`).join(",")).join("\n");
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "DepartmentMappingList.csv");
+    link.href = url;
+    link.download = "DepartmentMappingList.csv";
     link.style.visibility = "hidden";
     document.body.appendChild(link);
+
     link.click();
     document.body.removeChild(link);
-     
-  this.logDownloadActivity2();
+    URL.revokeObjectURL(url);
+
+    this.logDownloadActivity2();
   }
 
 
-logDownloadActivity() {
-  const payload = {
-    pageName: 'Department Master',
-    activity: 'Download',
-    activityDescription: 'User downloaded list of departments.',
-    entryBy: localStorage.getItem('UserID'),
-    User_Token: localStorage.getItem('User_Token')
-  };
+  logDownloadActivity() {
+    const payload = {
+      pageName: 'Department Master',
+      activity: 'Download',
+      activityDescription: 'User downloaded list of departments.',
+      entryBy: localStorage.getItem('UserID'),
+      User_Token: localStorage.getItem('User_Token')
+    };
 
-  const apiUrl = this._global.baseAPIUrl + "Role/InsertActivityDetail";
+    const apiUrl = this._global.baseAPIUrl + "Role/InsertActivityDetail";
 
-  this._onlineExamService.postData(payload, apiUrl).subscribe(
-    () => {
-      console.log("InsertActivityDetail API call successful."); 
-    },
-    (error) => {
-      console.error("InsertActivityDetail API call failed:", error); 
-    }
-  );
-}
-
-logDownloadActivity2() {
-  const payload = {
-    pageName: 'Department Master',
-    activity: 'Download',
-    activityDescription: 'User downloaded list of department mappinngs.',
-    entryBy: localStorage.getItem('UserID'),
-    User_Token: localStorage.getItem('User_Token')
-  };
-
-  const apiUrl = this._global.baseAPIUrl + "Role/InsertActivityDetail";
-
-  this._onlineExamService.postData(payload, apiUrl).subscribe(
-    () => {
-      console.log("InsertActivityDetail API call successful."); 
-    },
-    (error) => {
-      console.error("InsertActivityDetail API call failed:", error); 
-    }
-  );
-}
-
-
-onSubmit1() {
-  if (this.AddBranchMappingForm.invalid) {
-    this.AddBranchMappingForm.markAllAsTouched();
-    this.ErrorMessage("Please fill all required fields.");
-    return;
+    this._onlineExamService.postData(payload, apiUrl).subscribe(
+      () => {
+        console.log("InsertActivityDetail API call successful.");
+      },
+      (error) => {
+        console.error("InsertActivityDetail API call failed:", error);
+      }
+    );
   }
 
-  const selectedDeptIds: number[] = this.departmentsArray.value;
-  const userId = +this.AddBranchMappingForm.get("UserID")?.value;
-  const isApprovedRaw = this.AddBranchMappingForm.get("approval")?.value || "";
-  const isApproved = isApprovedRaw.trim().toLowerCase() === "yes" ? 1 : 0;
-  const autoActivityApproval = this.AddBranchMappingForm.get("autoActivityApproval")?.value || '';
+  logDownloadActivity2() {
+    const payload = {
+      pageName: 'Department Master',
+      activity: 'Download',
+      activityDescription: 'User downloaded list of department mappinngs.',
+      entryBy: localStorage.getItem('UserID'),
+      User_Token: localStorage.getItem('User_Token')
+    };
 
-  if (isApproved && !autoActivityApproval) {
-    this.ErrorMessage("Please select an activity for Auto Activity Approval.");
-    return;
+    const apiUrl = this._global.baseAPIUrl + "Role/InsertActivityDetail";
+
+    this._onlineExamService.postData(payload, apiUrl).subscribe(
+      () => {
+        console.log("InsertActivityDetail API call successful.");
+      },
+      (error) => {
+        console.error("InsertActivityDetail API call failed:", error);
+      }
+    );
   }
 
-  const token = localStorage.getItem("User_Token");
-  if (!token) {
-    this.ErrorMessage("User token missing. Please login again.");
-    return;
-  }
 
-  const apiUrl = this._global.baseAPIUrl + "DepartmentMaster/BulkInsert?user_Token=" + token;
-
-  const departmentsToDelete = this.originalMappedDepartments.filter(
-    (id) => !selectedDeptIds.includes(id)
-  );
-  const departmentsToInsert = selectedDeptIds.filter(
-    (id) => !this.originalMappedDepartments.includes(id)
-  );
-
-  const updateApprovalStatusOnly =
-    departmentsToInsert.length === 0 && departmentsToDelete.length === 0;
-
-  let payload: any = {
-    sysUserID: userId,
-    userid: localStorage.getItem("UserID"),
-    isApproved: isApproved,
-    autoActivityApproval: autoActivityApproval,
-    updateApprovalStatusOnly: updateApprovalStatusOnly,
-  };
-
-  if (updateApprovalStatusOnly) {
-    if (!this.selectedMappedDepartmentName) {
-      this.ErrorMessage("Please Select Department Name");
+  onSubmit1() {
+    if (this.AddBranchMappingForm.invalid) {
+      this.AddBranchMappingForm.markAllAsTouched();
+      this.ErrorMessage("Please fill all required fields.");
       return;
     }
-    payload.DepartmentName = this.selectedMappedDepartmentName;
-  } else {
-    payload.departmentIDs = departmentsToInsert;
-    payload.deleteDepartmentIDs = departmentsToDelete;
-  }
 
-  this._onlineExamService.postData(payload, apiUrl).subscribe({
-    next: (response: any) => {
-      const msg = response?.Message || "Bulk Insert Success";
+    const selectedDeptIds: number[] = this.departmentsArray.value;
+    const userId = +this.AddBranchMappingForm.get("UserID")?.value;
+    const isApprovedRaw = this.AddBranchMappingForm.get("approval")?.value || "";
+    const isApproved = isApprovedRaw.trim().toLowerCase() === "yes" ? 1 : 0;
+    const autoActivityApproval = this.AddBranchMappingForm.get("autoActivityApproval")?.value || '';
 
-      // ✅ Decide success/error based on keywords in message
-      if (
-        msg.toLowerCase().includes("cannot insert") ||
-        msg.toLowerCase().includes("already exists") ||
-        msg.toLowerCase().includes("error")
-      ) {
-        this.ErrorMessage(msg); // Show as error
-      } else {
-        this.showSuccessToast(msg); // Show as success
+    if (isApproved && !autoActivityApproval) {
+      this.ErrorMessage("Please select an activity for Auto Activity Approval.");
+      return;
+    }
+
+    const token = localStorage.getItem("User_Token");
+    if (!token) {
+      this.ErrorMessage("User token missing. Please login again.");
+      return;
+    }
+
+    const apiUrl = this._global.baseAPIUrl + "DepartmentMaster/BulkInsert?user_Token=" + token;
+
+    const departmentsToDelete = this.originalMappedDepartments.filter(
+      (id) => !selectedDeptIds.includes(id)
+    );
+    const departmentsToInsert = selectedDeptIds.filter(
+      (id) => !this.originalMappedDepartments.includes(id)
+    );
+
+    const updateApprovalStatusOnly =
+      departmentsToInsert.length === 0 && departmentsToDelete.length === 0;
+
+    let payload: any = {
+      sysUserID: userId,
+      userid: localStorage.getItem("UserID"),
+      isApproved: isApproved,
+      autoActivityApproval: autoActivityApproval,
+      updateApprovalStatusOnly: updateApprovalStatusOnly,
+    };
+
+    if (updateApprovalStatusOnly) {
+      if (!this.selectedMappedDepartmentName) {
+        this.ErrorMessage("Please Select Department Name");
+        return;
       }
+      payload.DepartmentName = this.selectedMappedDepartmentName;
+    } else {
+      payload.departmentIDs = departmentsToInsert;
+      payload.deleteDepartmentIDs = departmentsToDelete;
+    }
 
-      this.handleAfterSubmit();
-    },
-    error: (error) => {
-      this.ErrorMessage("API call failed. See console for details.");
-      console.error("Bulk API Error:", error);
-      this.handleAfterSubmit();
-    },
-  });
-}
+    this._onlineExamService.postData(payload, apiUrl).subscribe({
+      next: (response: any) => {
+        const msg = response?.Message || "Bulk Insert Success";
+
+        // ✅ Decide success/error based on keywords in message
+        if (
+          msg.toLowerCase().includes("cannot insert") ||
+          msg.toLowerCase().includes("already exists") ||
+          msg.toLowerCase().includes("error")
+        ) {
+          this.ErrorMessage(msg); // Show as error
+        } else {
+          this.showSuccessToast(msg); // Show as success
+        }
+
+        this.handleAfterSubmit();
+      },
+      error: (error) => {
+        this.ErrorMessage("API call failed. See console for details.");
+        console.error("Bulk API Error:", error);
+        this.handleAfterSubmit();
+      },
+    });
+  }
 
   handleAfterSubmit() {
     this.OnReset1();
@@ -1086,16 +1100,16 @@ onSubmit1() {
       }
     );
   }
- 
 
-showSuccessToast(msg: any) {
+
+  showSuccessToast(msg: any) {
     this.toastr.show(
       // '<div class="alert-text"></div> <span class="alert-title" data-notify="title"></span> <span data-notify="message"> ' +
       //   msg +
       //   " </span></div>",
       // "",
-       `<span class="alert-title">Success!</span><span>${msg}</span>`,
-    '',
+      `<span class="alert-title">Success!</span><span>${msg}</span>`,
+      '',
       {
         timeOut: 3000,
         closeButton: true,
@@ -1109,143 +1123,145 @@ showSuccessToast(msg: any) {
     );
   }
 
-editBranchMapping(template: TemplateRef<any>, row: any) {
-  console.log("🧪 Selected Row in Edit:", row);
-  
+  editBranchMapping(template: TemplateRef<any>, row: any) {
+    console.log("🧪 Selected Row in Edit:", row);
 
-  this.AddBranchMappingForm.reset();
-  this.departmentsArray.clear();
-  this.originalMappedDepartments = [];
-  this.isEditMapPopup = true;
 
-  // Store original department name and activity
-  this.selectedMappedDepartmentName = row.DepartmentName;
-  this.selectedDepartmentName = row.DepartmentName;
-  this.originalActivity = row.autoActivityApproval;  // ✅ store for submit comparison
+    this.AddBranchMappingForm.reset();
+    this.departmentsArray.clear();
+    this.originalMappedDepartments = [];
+    this.isEditMapPopup = true;
 
-  const userId = row.ddmID;
-  const token = localStorage.getItem("User_Token");
+    // Store original department name and activity
+    this.selectedMappedDepartmentName = row.DepartmentName;
+    this.selectedDepartmentName = row.DepartmentName;
+    this.originalActivity = row.autoActivityApproval;  // ✅ store for submit comparison
 
-  if (!token) {
-    this.ErrorMessage("User token missing. Please login again.");
-    return;
-  }
+    const userId = row.ddmID;
+    const token = localStorage.getItem("User_Token");
 
-  this.AddBranchMappingForm.patchValue({
-    UserID: userId,
-    approval: row.approval?.toLowerCase() === "yes" ? "yes" : "no",
-    autoActivityApproval: row.autoActivityApproval
-  });
-
-  this.AddBranchMappingForm.get("UserID")?.disable();
-  // this.AddBranchMappingForm.get("autoActivityApproval")?.disable(); // Enable if needed
-
-  const apiUrl = `${this._global.baseAPIUrl}DepartmentMaster/GetDepartmentMapDetailsByID?user_Token=${token}&userid=${userId}`;
-
-  console.log("Calling API URL:", apiUrl);
-
-  const deptData$ = this._onlineExamService.getAllData(apiUrl);
-
-  if (!deptData$ || typeof deptData$.subscribe !== "function") {
-    console.error("❌ getAllData() did not return a valid Observable!", deptData$);
-    return;
-  }
-
-  deptData$.subscribe({
-    next: (mappedDepartments: any[]) => {
-      this.originalMappedDepartments = [];
-
-      mappedDepartments.forEach((d: any) => {
-        const deptId = Number(d.departmentID);
-        if (deptId) {
-          this.departmentsArray.push(new FormControl(deptId));
-          this.originalMappedDepartments.push(deptId);
-        } else {
-          console.warn("⚠️ Invalid departmentID:", d);
-        }
-      });
-
-      this.updateSelectAllState();
-      this.updateSelectedDepartmentsLabel();
-      this.addBranchMapping(template, true);
-    },
-    error: (err) => {
-      console.error("❌ Mapping load error", err);
-      this.addBranchMapping(template);
+    if (!token) {
+      this.ErrorMessage("User token missing. Please login again.");
+      return;
     }
-  });
-}
 
-onUserChange(event: any) {
-  const userId = event.target.value;
-  const activity = this.AddBranchMappingForm.get("autoActivityApproval")?.value;
+    this.AddBranchMappingForm.patchValue({
+      UserID: userId,
+      approval: row.approval?.toLowerCase() === "yes" ? "yes" : "no",
+      autoActivityApproval: row.autoActivityApproval
+    });
 
-  if (!activity) {
-    this.ErrorMessage("Please select Activity first.");
-    return;
+    this.AddBranchMappingForm.get("UserID")?.disable();
+    // this.AddBranchMappingForm.get("autoActivityApproval")?.disable(); // Enable if needed
+
+    const apiUrl = `${this._global.baseAPIUrl}DepartmentMaster/GetDepartmentMapDetailsByID?user_Token=${token}&userid=${userId}`;
+
+    console.log("Calling API URL:", apiUrl);
+
+    const deptData$ = this._onlineExamService.getAllData(apiUrl);
+
+    if (!deptData$ || typeof deptData$.subscribe !== "function") {
+      console.error("❌ getAllData() did not return a valid Observable!", deptData$);
+      return;
+    }
+
+    deptData$.subscribe({
+      next: (mappedDepartments: any[]) => {
+        this.originalMappedDepartments = [];
+
+        mappedDepartments.forEach((d: any) => {
+          const deptId = Number(d.departmentID);
+          if (deptId) {
+            this.departmentsArray.push(new FormControl(deptId));
+            this.originalMappedDepartments.push(deptId);
+          } else {
+            console.warn("⚠️ Invalid departmentID:", d);
+          }
+        });
+
+        this.updateSelectAllState();
+        this.updateSelectedDepartmentsLabel();
+        this.addBranchMapping(template, true);
+      },
+      error: (err) => {
+        console.error("❌ Mapping load error", err);
+        this.addBranchMapping(template);
+      }
+    });
   }
 
-  this.getBranchForUser(userId, activity);  // ✅ Pass both arguments
-  
-}
+  onUserChange(event: any) {
+    const userId = event.target.value;
+    const activity = this.AddBranchMappingForm.get("autoActivityApproval")?.value;
 
+    if (!activity) {
+      this.ErrorMessage("Please select Activity first.");
+      return;
+    }
 
-onActivityChange() {
-  const userId = this.AddBranchMappingForm.get("UserID")?.value;
-  const activity = this.AddBranchMappingForm.get("autoActivityApproval")?.value;
+    this.getBranchForUser(userId, activity);  // ✅ Pass both arguments
 
-  if (userId && activity) {
-    this.getBranchForUser(userId, activity);  // Pass both UserID and Activity
-  }
-  this.updateSelectedDepartmentsLabel();
-}
-
-
-getBranchForUser(userId: string, activity: string) {
-  const token = localStorage.getItem("User_Token");
-
-  if (!token) {
-    this.ErrorMessage("User token missing. Please login again.");
-    return;
   }
 
-  if (!activity) {
-    this.ErrorMessage("Activity missing.");
-    return;
+
+  onActivityChange() {
+    const userId = this.AddBranchMappingForm.get("UserID")?.value;
+    const activity = this.AddBranchMappingForm.get("autoActivityApproval")?.value;
+
+    if (userId && activity) {
+      this.getBranchForUser(userId, activity);  // Pass both UserID and Activity
+    }
+    this.updateSelectedDepartmentsLabel();
   }
 
-  const apiUrl =
-    this._global.baseAPIUrl +
-    "DepartmentMaster/GetDepartmentMappingForSelectedUser?user_Token=" +
-    token +
-    "&userid=" +
-    userId +
-    "&autoActivityApproval=" +
-    activity;
-
-  this._onlineExamService.getAllData(apiUrl).subscribe({
-    next: (response: any[]) => {
-      this.approvedDepartmentIds = response.map(dept => dept.departmentID);
-      this.originalMappedDepartments = [...this.approvedDepartmentIds];
-      this.setDepartmentsInForm();
-      this.updateSelectedDepartmentsLabel();
-    },
-    error: (err) => {
-      console.error("❌ API Error:", err);
-    },
-  });
-}
 
 
 
+  getBranchForUser(userId: string, activity: string) {
+    const token = localStorage.getItem("User_Token");
 
-setDepartmentsInForm() {
-  this.departmentsArray.clear();
+    if (!token) {
+      this.ErrorMessage("User token missing. Please login again.");
+      return;
+    }
 
-  this.approvedDepartmentIds.forEach(id => {
-    this.departmentsArray.push(new FormControl(id));
-  });
-}
+    if (!activity) {
+      this.ErrorMessage("Activity missing.");
+      return;
+    }
+
+    const apiUrl =
+      this._global.baseAPIUrl +
+      "DepartmentMaster/GetDepartmentMappingForSelectedUser?user_Token=" +
+      token +
+      "&userid=" +
+      userId +
+      "&autoActivityApproval=" +
+      activity;
+
+    this._onlineExamService.getAllData(apiUrl).subscribe({
+      next: (response: any[]) => {
+        this.approvedDepartmentIds = response.map(dept => dept.departmentID);
+        this.originalMappedDepartments = [...this.approvedDepartmentIds];
+        this.setDepartmentsInForm();
+        this.updateSelectedDepartmentsLabel();
+      },
+      error: (err) => {
+        console.error("❌ API Error:", err);
+      },
+    });
+  }
+
+
+
+
+  setDepartmentsInForm() {
+    this.departmentsArray.clear();
+
+    this.approvedDepartmentIds.forEach(id => {
+      this.departmentsArray.push(new FormControl(id));
+    });
+  }
 
 
 

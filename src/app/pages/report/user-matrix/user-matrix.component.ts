@@ -73,20 +73,41 @@ export class UserMatrixComponent implements OnInit {
     private messageService: MessageService,
     private datePipe: DatePipe,
   ) { }
-  ngOnInit(): void {
-    this.UserMatrixForm = this.formBuilder.group({
-      // DATEFROM: ['', Validators.required],
-      // DATETO: ['', Validators.required],  
-      selectedUser: ['', Validators.required],
-      selectedType: ['', Validators.required],
-      User_Token: localStorage.getItem('User_Token'),
-      CreatedBy: localStorage.getItem('UserID')
-    });
-    this.UserMatrixForm.controls['selectedUser'].setValue('');
-    this.BindHeader(this._StatusList, this._StatusList);
-    this.getActiveUsers();
-  }
 
+
+ ngOnInit(): void {
+  this.UserMatrixForm = this.formBuilder.group({
+    selectedUser: ['', Validators.required],
+    selectedType: ['', Validators.required],
+    User_Token: localStorage.getItem('User_Token'),
+    CreatedBy: localStorage.getItem('UserID')
+  });
+
+  // Initialize
+  this.BindHeader(this._StatusList, this._StatusList);
+  this.getActiveUsers();
+
+  // 👇 Auto-fetch data when dropdowns change
+  this.UserMatrixForm.valueChanges.subscribe((formValue) => {
+    const { selectedUser, selectedType } = formValue;
+    this.clearUserMatrixTable();
+
+  });
+}
+
+
+private clearUserMatrixTable() {
+  this.formattedData = [];
+  this.immutableFormattedData = [];
+  this._FilteredList = [];
+  this._StatusList = [];
+  // keep headerList if you want a consistent table header; clear it if you want header removed
+  // this.headerList = []; // uncomment to remove headers as well
+  this.first = 0;      
+  this.loading = false;    
+  this.noDataMessage = '';  
+ // this.downloadEnabled = false;
+}
 
 
   onFromDateChange(date: Date) {
@@ -168,14 +189,13 @@ export class UserMatrixComponent implements OnInit {
     );
 }
 
-
 downloadCSV() {
-  if (!this.formattedData || !this.formattedData.length) {
-    return;
-  }
+  if (!this.formattedData || !this.formattedData.length) return;
+
   const headers = this.headerList.map(col => col.header);
   const csvRows = [];
   csvRows.push(headers.join(',')); 
+
   this.formattedData.forEach(row => {
     const values = this.headerList.map(col => {
       let val = row[col.field];
@@ -188,7 +208,8 @@ downloadCSV() {
     });
     csvRows.push(values.join(','));
   });
-  const csvData = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+
+  const csvData = new Blob(['\ufeff' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(csvData);
   a.download = 'UserMatrix.csv';
@@ -435,57 +456,6 @@ downloadCSV() {
   isValid() {
     return this.UserMatrixForm.valid
   }
-
-  // getLogList() {
-  //   debugger
-  //   const fromDate = this.UserMatrixForm.value.DATEFROM
-  //     ? this.datePipe.transform(this.UserMatrixForm.value.DATEFROM, 'yyyy-MM-dd')
-  //     : '';
-  //   const toDate = this.UserMatrixForm.value.DATETO
-  //     ? this.datePipe.transform(this.UserMatrixForm.value.DATETO, 'yyyy-MM-dd')
-  //     : '';
-
-  //   const activityId = this.UserMatrixForm.value.selectedUser || '';
-  //   const userId = localStorage.getItem('UserID');
-  //   const userToken = localStorage.getItem('User_Token') || '';
-
-  //   const apiUrl = `${this._global.baseAPIUrl}Report/GetActivityDetails`;
-
-  //   let params = new HttpParams()
-  //     .set('user_Token', userToken)
-  //     .set('FromDate', fromDate)
-  //     .set('ToDate', toDate)
-  //     .set('UserId', userId)
-  //     .set('Activity', activityId);
-
-  //   this.loading = true;
-  //   this._onlineExamService.getData(apiUrl, params)
-  //     .subscribe(
-  //       (data: any[]) => {
-  //         this.loading = false;
-
-  //         if (Array.isArray(data) && data.length > 0) {
-  //           debugger
-  //           this.noDataMessage = '';
-  //           this._StatusList = data;
-  //           this._FilteredList = data;
-  //           this.prepareTableData(this._StatusList, this._FilteredList);
-  //         } else {
-  //           this.noDataMessage = `No records found for activity "${activityId || 'Selected'}"`;
-  //           this._StatusList = [];
-  //           this._FilteredList = [];
-  //           this.prepareTableData([], []);
-  //         }
-  //       },
-  //       (error) => {
-  //         this.loading = false;
-  //         console.error('Error fetching log data', error);
-  //         this.noDataMessage = 'Error loading data. Please try again.';
-  //         this.formattedData = [];
-  //       }
-  //     );
-  // }
-
 
   getLogList() {
     debugger;

@@ -64,18 +64,35 @@ export class OutreportComponent implements OnInit {
     private _onlineExamService: OnlineExamServiceService,
     private _global: Globalconstants
   ) { }
-ngOnInit() {
-  this.OutReportForm = this.formBuilder.group({
-    FromDate: [null, Validators.required],
-    ToDate: [null, Validators.required],
-    status: [0],
-    User_Token: localStorage.getItem("User_Token"),
-    CreatedBy: localStorage.getItem("UserID"),
-  });
+  ngOnInit() {
+    this.OutReportForm = this.formBuilder.group({
+      FromDate: [null, Validators.required],
+      ToDate: [null, Validators.required],
+      status: [0],
+      User_Token: localStorage.getItem("User_Token"),
+      CreatedBy: localStorage.getItem("UserID"),
+    });
 
-  this.prepareTableData([], []);
-  // this.GetDestructionReport();
-}
+    this.prepareTableData([], []);
+    this.OutReportForm.get('FromDate')?.valueChanges.subscribe(() => {
+      this.clearLogTable();
+    });
+
+    this.OutReportForm.get('ToDate')?.valueChanges.subscribe(() => {
+      this.clearLogTable();
+    });
+  }
+
+  private clearLogTable() {
+    this.formattedData = [];
+    this.immutableFormattedData = [];
+    this._FilteredList = [];
+    this._StatusList = [];
+
+    this.first = 0;
+    this.loading = false;
+    this.rows = 10;
+  }
 
   get isDateRangeValid(): boolean {
     const fromDate = this.OutReportForm.get('DATEFROM')?.value;
@@ -92,57 +109,57 @@ ngOnInit() {
   headerList: any;
   immutableFormattedData: any;
   loading: boolean = true;
-prepareTableData(tableData, headerList) {
-  let formattedData = [];
-  let tableHeader: any = [
-    { field: "srNo", header: "SR NO", index: 1 },
-    { field: "cartonNo", header: "CARTON NO", index: 3 },
-    { field: "DepartmentName", header: "DEPARTMENT NAME", index: 3 },
-    { field: "DepartmentCode", header: "DEPARTMENT CODE", index: 3 },
-    { field: "documents", header: "DOCUMENTS", index: 3 },
-    { field: "DocumentDetails", header: "DOCUMENT DETAILS", index: 4 },
-    { field: "ReteionPeriod", header: "RETENTION PERIOD", index: 4 },
-    { field: "ExpireDate", header: "EXPIRY ON", index: 4 },
-    { field: "extensionBy", header: "EXTENSION BY", index: 2 },
-    { field: "extensionDate", header: "EXTENSION ON", index: 2 },
-    { field: "isDestruction", header: "IS DESTRUCTION", index: 4 },
-    { field: "DestructionDate", header: "DESTRUCTION ON", index: 2 },
-    { field: "DestructionBy", header: "DESTRUCTION BY", index: 2 },
-  ];
+  prepareTableData(tableData, headerList) {
+    let formattedData = [];
+    let tableHeader: any = [
+      { field: "srNo", header: "SR NO", index: 1 },
+      { field: "cartonNo", header: "CARTON NO", index: 3 },
+      { field: "DepartmentName", header: "DEPARTMENT NAME", index: 3 },
+      { field: "DepartmentCode", header: "DEPARTMENT CODE", index: 3 },
+      { field: "documents", header: "DOCUMENTS", index: 3 },
+      { field: "DocumentDetails", header: "DOCUMENT DETAILS", index: 4 },
+      { field: "ReteionPeriod", header: "RETENTION PERIOD", index: 4 },
+      { field: "ExpireDate", header: "EXPIRY ON", index: 4 },
+      { field: "extensionBy", header: "EXTENSION BY", index: 2 },
+      { field: "extensionDate", header: "EXTENSION ON", index: 2 },
+      { field: "isDestruction", header: "IS DESTRUCTION", index: 4 },
+      { field: "DestructionDate", header: "DESTRUCTION ON", index: 2 },
+      { field: "DestructionBy", header: "DESTRUCTION BY", index: 2 },
+    ];
 
-  tableData.forEach((el, index) => {
-    let periodStr = "";
-    if (el.ReteionPeriod && el.ReteionPeriod.toString().toUpperCase() !== "NA") {
-      const periodNum = parseInt(el.ReteionPeriod);
-      if (!isNaN(periodNum)) {
-        periodStr = `${periodNum} year${periodNum > 1 ? "s" : ""}`;
+    tableData.forEach((el, index) => {
+      let periodStr = "";
+      if (el.ReteionPeriod && el.ReteionPeriod.toString().toUpperCase() !== "NA") {
+        const periodNum = parseInt(el.ReteionPeriod);
+        if (!isNaN(periodNum)) {
+          periodStr = `${periodNum} year${periodNum > 1 ? "s" : ""}`;
+        }
+      } else {
+        periodStr = "NA";
       }
-    } else {
-      periodStr = "NA";
-    }
 
-    formattedData.push({
-      srNo: parseInt(index + 1),
-      cartonNo: el.cartonNo,
-      DepartmentName: el.DepartmentName,
-      ExpireDate: el.ExpireDate,
-      DepartmentCode: el.DepartmentCode,
-      documents: el.documents,
-      DocumentDetails: el.DocumentDetails,
-      ReteionPeriod: periodStr,
-      isDestruction: el.isDestruction,
-      DestructionDate: el.DestructionDate,
-      DestructionBy: el.DestructionBy,
-      extensionBy: el.extensionBy,
-      extensionDate: el.extensionDate,
+      formattedData.push({
+        srNo: parseInt(index + 1),
+        cartonNo: el.cartonNo,
+        DepartmentName: el.DepartmentName,
+        ExpireDate: el.ExpireDate,
+        DepartmentCode: el.DepartmentCode,
+        documents: el.documents,
+        DocumentDetails: el.DocumentDetails,
+        ReteionPeriod: periodStr,
+        isDestruction: el.isDestruction,
+        DestructionDate: el.DestructionDate,
+        DestructionBy: el.DestructionBy,
+        extensionBy: el.extensionBy,
+        extensionDate: el.extensionDate,
+      });
     });
-  });
 
-  this.headerList = tableHeader;
-  this.immutableFormattedData = JSON.parse(JSON.stringify(formattedData));
-  this.formattedData = formattedData;
-  this.loading = false;
-}
+    this.headerList = tableHeader;
+    this.immutableFormattedData = JSON.parse(JSON.stringify(formattedData));
+    this.formattedData = formattedData;
+    this.loading = false;
+  }
 
 
   searchTable($event) {
@@ -204,64 +221,64 @@ prepareTableData(tableData, headerList) {
       this.OutReportForm.get('FromDate')?.setValue(null); // reset invalid date
     }
   }
-  
+
   GetDestructionReport() {
-  const fromDateStr = this.OutReportForm.get('FromDate')?.value;
-  const toDateStr = this.OutReportForm.get('ToDate')?.value;
+    const fromDateStr = this.OutReportForm.get('FromDate')?.value;
+    const toDateStr = this.OutReportForm.get('ToDate')?.value;
 
-  // Show toaster if dates are missing
-  if (!fromDateStr || !toDateStr) {
-    this.toastr.show(
-      '<div class="alert-text"</div> <span class="alert-title" data-notify="title">Error!</span> <span data-notify="message">Please select both From Date and To Date before searching!</span></div>',
-      "",
-      {
-        timeOut: 3000,
-        closeButton: true,
-        enableHtml: true,
-        tapToDismiss: false,
-        titleClass: "alert-title",
-        positionClass: "toast-top-center",
-        toastClass:
-          "ngx-toastr alert alert-dismissible alert-danger alert-notify"
-      }
-    );
-    return;
-  }
-
-  const token = localStorage.getItem("User_Token");
-  const userId = localStorage.getItem("UserID");
-
-  // helper to format YYYY-MM-DD in local timezone
-  const formatLocalYMD = (d: string) => {
-    if (!d) return '';
-    const dt = new Date(d);
-    const y = dt.getFullYear();
-    const m = (dt.getMonth() + 1).toString().padStart(2, '0');
-    const dd = dt.getDate().toString().padStart(2, '0');
-    return `${y}-${m}-${dd}`;
-  };
-
-  const formattedFrom = formatLocalYMD(fromDateStr);
-  const formattedTo = formatLocalYMD(toDateStr);
-
-  let apiUrl = this._global.baseAPIUrl + "Report/GetDestructionReport?user_Token=" + token;
-
-  if (formattedFrom) apiUrl += "&FromDate=" + formattedFrom;
-  if (formattedTo) apiUrl += "&ToDate=" + formattedTo;
-  if (userId) apiUrl += "&UserId=" + userId;
-
-  this._onlineExamService.getAllData(apiUrl).subscribe({
-    next: (data: any) => {
-      console.log("data_", data);
-      this._StatusList = data;
-      this._FilteredList = data;
-      this.prepareTableData(this._FilteredList, this._FilteredList);
-    },
-    error: err => {
-      console.error('GetDestructionReport Error:', err);
+    // Show toaster if dates are missing
+    if (!fromDateStr || !toDateStr) {
+      this.toastr.show(
+        '<div class="alert-text"</div> <span class="alert-title" data-notify="title">Error!</span> <span data-notify="message">Please select both From Date and To Date before searching!</span></div>',
+        "",
+        {
+          timeOut: 3000,
+          closeButton: true,
+          enableHtml: true,
+          tapToDismiss: false,
+          titleClass: "alert-title",
+          positionClass: "toast-top-center",
+          toastClass:
+            "ngx-toastr alert alert-dismissible alert-danger alert-notify"
+        }
+      );
+      return;
     }
-  });
-}
+
+    const token = localStorage.getItem("User_Token");
+    const userId = localStorage.getItem("UserID");
+
+    // helper to format YYYY-MM-DD in local timezone
+    const formatLocalYMD = (d: string) => {
+      if (!d) return '';
+      const dt = new Date(d);
+      const y = dt.getFullYear();
+      const m = (dt.getMonth() + 1).toString().padStart(2, '0');
+      const dd = dt.getDate().toString().padStart(2, '0');
+      return `${y}-${m}-${dd}`;
+    };
+
+    const formattedFrom = formatLocalYMD(fromDateStr);
+    const formattedTo = formatLocalYMD(toDateStr);
+
+    let apiUrl = this._global.baseAPIUrl + "Report/GetDestructionReport?user_Token=" + token;
+
+    if (formattedFrom) apiUrl += "&FromDate=" + formattedFrom;
+    if (formattedTo) apiUrl += "&ToDate=" + formattedTo;
+    if (userId) apiUrl += "&UserId=" + userId;
+
+    this._onlineExamService.getAllData(apiUrl).subscribe({
+      next: (data: any) => {
+        console.log("data_", data);
+        this._StatusList = data;
+        this._FilteredList = data;
+        this.prepareTableData(this._FilteredList, this._FilteredList);
+      },
+      error: err => {
+        console.error('GetDestructionReport Error:', err);
+      }
+    });
+  }
 
   // onDownload() {
   //   this.downloadFile();
@@ -324,55 +341,87 @@ prepareTableData(tableData, headerList) {
   //   }
   // }
 
-  onDownload() {
-    if (!this.formattedData || this.formattedData.length === 0) {
-      alert('No data to download');
-      return;
-    }
-
-    const replacer = (key, value) => (value === null ? '' : value);
-    const header = this.headerList.map(col => col.header);
-    const fields = this.headerList.map(col => col.field);
-
-    const csv = [
-      header.join(','), // header row
-      ...this.formattedData.map(row =>
-        fields.map(field => JSON.stringify(row[field], replacer)).join(',')
-      ),
-    ].join('\r\n');
-
-    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
-    const downloadLink = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    downloadLink.href = url;
-    downloadLink.setAttribute('download', 'DestructionReport.csv');
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-    this.logDownloadActivity();
+onDownload() {
+  if (!this.formattedData || this.formattedData.length === 0) {
+    alert('No data to download');
+    return;
   }
+  const cols = this.headerList ?? [];
+
+  const headerLabels: string[] = cols.map((col: any) => col?.header ?? String(col?.field ?? col ?? ''));
+  const fields: string[] = cols.map((col: any) => (typeof col === 'string' ? col : (col?.field ?? col)));
+
+  const getByPath = (obj: any, path: string) => {
+    if (!path) return undefined;
+    return path.split('.').reduce((acc: any, k: string) => {
+      if (acc == null) return undefined;
+      const idx = Number(k);
+      return Number.isInteger(idx) ? acc[idx] : acc[k];
+    }, obj);
+  };
+  const escapeCSV = (value: any): string => {
+    if (value == null) return '';
+    if (value instanceof Date) value = value.toISOString();
+    else if (typeof value === 'object') {
+      try { value = JSON.stringify(value); } catch { value = String(value); }
+    } else {
+      value = String(value);
+    }
+    if (/[",\r\n]/.test(value)) {
+      return '"' + value.replace(/"/g, '""') + '"';
+    }
+    return value;
+  };
+
+  const rows: string[] = [];
+  rows.push(headerLabels.map(h => escapeCSV(h)).join(','));
+
+  for (const row of this.formattedData) {
+    const values = fields.map((f: any) => {
+      const raw = (typeof f === 'string' && f.includes('.')) ? getByPath(row, f) : row[f];
+      return escapeCSV(raw);
+    });
+    rows.push(values.join(','));
+  }
+
+  const csvContent = '\uFEFF' + rows.join('\r\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'DestructionReport.csv');
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  this.logDownloadActivity?.();
+}
+
 
 
   logDownloadActivity() {
-  const payload = {
-    pageName: 'Destruction Report',
-    activity: 'Download',
-    activityDescription: 'User downloaded the Destruction Report',
-    entryBy: localStorage.getItem('UserID'),
-    User_Token: localStorage.getItem('User_Token')
-  };
+    const payload = {
+      pageName: 'Destruction Report',
+      activity: 'Download',
+      activityDescription: 'User downloaded the Destruction Report',
+      entryBy: localStorage.getItem('UserID'),
+      User_Token: localStorage.getItem('User_Token')
+    };
 
-  const apiUrl = this._global.baseAPIUrl + "Role/InsertActivityDetail";
+    const apiUrl = this._global.baseAPIUrl + "Role/InsertActivityDetail";
 
-  this._onlineExamService.postData(payload, apiUrl).subscribe(
-    () => {
-      console.log("InsertActivityDetail API call successful."); 
-    },
-    (error) => {
-      console.error("InsertActivityDetail API call failed:", error); 
-    }
-  );
-}
+    this._onlineExamService.postData(payload, apiUrl).subscribe(
+      () => {
+        console.log("InsertActivityDetail API call successful.");
+      },
+      (error) => {
+        console.error("InsertActivityDetail API call failed:", error);
+      }
+    );
+  }
 
   OnReset() {
     this.Reset = true;

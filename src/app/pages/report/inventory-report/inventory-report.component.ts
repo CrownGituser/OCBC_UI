@@ -144,6 +144,25 @@ export class InventoryReportComponent implements OnInit {
 
     this.prepareTableData([], []);
     this.GetInventoryList();
+        this.RefillingReportForm.get('FromDate')?.valueChanges.subscribe(() => {
+      this.clearLogTable();
+    });
+
+    this.RefillingReportForm.get('ToDate')?.valueChanges.subscribe(() => {
+      this.clearLogTable();
+    });
+  }
+
+  
+    private clearLogTable() {
+    this.formattedData = [];
+    this.immutableFormattedData = [];
+    this._FilteredList = [];
+    this._statusList = [];
+
+    this.first = 0;
+    this.loading = false;
+    this.rows = 10;
   }
 
   paginate(e) {
@@ -676,66 +695,158 @@ export class InventoryReportComponent implements OnInit {
   onSearchByDate() {
     this.GetInventoryList();
   }
+
+  // downloadFile() {
+  //   const filename = 'Inventory_Report';
+
+  //   // CSV Header - matches prepareTableData order and tableHeader labels
+  //   let csvData = "BATCH ID,CARTON NO,STATUS,ITEM STATUS,DEPARTMENT NAME,DEPARTMENT CODE,DOCUMENT TYPE,DOCUMENT DETAILS,INVENTORY BY,INVENTORY ON,INVENTORY APPROVED BY,INVENTORY APPROVED ON,REJECTED AT,REJECTED BY,REJECTED ON,INVENTORY SCHEDULE BY,INVENTORY SCHEDULE ON,INVENTORY ACK BY,INVENTORY ACK ON,PICKUP DATE,LOCATION UPDATED ON,LOCATION UPDATED BY,WAREHOUSE NAME,ITEM LOCATION,RETENTION PERIOD,EXPIRE DATE,IS DESTRUCTION OR EXTENSION,EXTENSION ON,EXTENSION BY,DESTRUCTION ON,DESTRUCTION BY\n";
+
+  //   if (!this.formattedData || this.formattedData.length === 0) {
+  //     console.warn("No data to download.");
+  //     return;
+  //   }
+
+  //   // Add CSV rows
+  //   this.formattedData.forEach((row: any) => {
+  //     csvData +=
+  //       `${row.batchId ?? ''},` +
+  //       `${row.cartonNo ?? ''},` +
+  //       `${row.status ?? ''},` +
+  //       `${row.ItemStatus ?? ''},` +
+  //       `${row.DepartmentName ?? ''},` +
+  //       `${row.DepartmentCode ?? ''},` +
+  //       `${row.documents ?? ''},` +
+  //       `${row.DocumentDetails ?? ''},` +
+  //       `${row.InventoryBy ?? ''},` +
+  //       `${row.InventoryDate ?? ''},` +
+  //       `${row.approvedBy ?? ''},` +
+  //       `${row.approvedDate ?? ''},` +
+  //       `${row.RejectAt ?? ''},` +
+  //       `${row.rejectedBy ?? ''},` +
+  //       `${row.rejectedDate ?? ''},` +
+  //       `${row.warehouseEntryBy ?? ''},` +
+  //       `${row.warehouseEntryDate ?? ''},` +
+  //       `${row.InventoryAckBy ?? ''},` +
+  //       `${row.InventoryAckDate ?? ''},` +
+  //       `${row.pickupDate ?? ''},` +
+  //       `${row.warehouseLocationUpdatedDate ?? ''},` +
+  //       `${row.warehouseLocationUpdatedBy ?? ''},` +
+
+  //       `${row.warehouseName ?? ''},` +
+  //       `${row.ItemLcoation ?? ''},` +
+  //       `${row.ReteionPeriod ?? ''},` +
+  //       `${row.ExpireDate ?? ''},` +
+  //       `${row.isDestructionOrExtension ?? ''},` +
+  //       `${row.extensionDate ?? ''},` +
+  //       `${row.extensionBy ?? ''},` +
+  //       `${row.DestructionDate ?? ''},` +
+  //       `${row.DestructionBy ?? ''}\n`;
+  //   });
+
+  //   const blob = new Blob(['\ufeff' + csvData], { type: 'text/csv;charset=utf-8;' });
+  //   const dwldLink = document.createElement("a");
+  //   const url = URL.createObjectURL(blob);
+
+  //   dwldLink.setAttribute("href", url);
+  //   dwldLink.setAttribute("download", filename + ".csv");
+  //   dwldLink.style.visibility = "hidden";
+  //   document.body.appendChild(dwldLink);
+  //   dwldLink.click();
+  //   document.body.removeChild(dwldLink);
+  //   this.logDownloadActivity();
+  // }
   downloadFile() {
-    const filename = 'Inventory_Report';
+  const filename = 'Inventory_Report';
 
-    // CSV Header - matches prepareTableData order and tableHeader labels
-    let csvData = "BATCH ID,CARTON NO,STATUS,ITEM STATUS,DEPARTMENT NAME,DEPARTMENT CODE,DOCUMENT TYPE,DOCUMENT DETAILS,INVENTORY BY,INVENTORY ON,INVENTORY APPROVED BY,INVENTORY APPROVED ON,REJECTED AT,REJECTED BY,REJECTED ON,INVENTORY SCHEDULE BY,INVENTORY SCHEDULE ON,INVENTORY ACK BY,INVENTORY ACK ON,PICKUP DATE,LOCATION UPDATED ON,LOCATION UPDATED BY,WAREHOUSE NAME,ITEM LOCATION,RETENTION PERIOD,EXPIRE DATE,IS DESTRUCTION OR EXTENSION,EXTENSION ON,EXTENSION BY,DESTRUCTION ON,DESTRUCTION BY\n";
+  // Define headers and field mappings (consistent, reusable)
+  const headers = [
+    { label: "BATCH ID", field: "batchId" },
+    { label: "CARTON NO", field: "cartonNo" },
+    { label: "STATUS", field: "status" },
+    { label: "ITEM STATUS", field: "ItemStatus" },
+    { label: "DEPARTMENT NAME", field: "DepartmentName" },
+    { label: "DEPARTMENT CODE", field: "DepartmentCode" },
+    { label: "DOCUMENT TYPE", field: "documents" },
+    { label: "DOCUMENT DETAILS", field: "DocumentDetails" },
+    { label: "INVENTORY BY", field: "InventoryBy" },
+    { label: "INVENTORY ON", field: "InventoryDate" },
+    { label: "INVENTORY APPROVED BY", field: "approvedBy" },
+    { label: "INVENTORY APPROVED ON", field: "approvedDate" },
+    { label: "REJECTED AT", field: "RejectAt" },
+    { label: "REJECTED BY", field: "rejectedBy" },
+    { label: "REJECTED ON", field: "rejectedDate" },
+    { label: "INVENTORY SCHEDULE BY", field: "warehouseEntryBy" },
+    { label: "INVENTORY SCHEDULE ON", field: "warehouseEntryDate" },
+    { label: "INVENTORY ACK BY", field: "InventoryAckBy" },
+    { label: "INVENTORY ACK ON", field: "InventoryAckDate" },
+    { label: "PICKUP DATE", field: "pickupDate" },
+    { label: "LOCATION UPDATED ON", field: "warehouseLocationUpdatedDate" },
+    { label: "LOCATION UPDATED BY", field: "warehouseLocationUpdatedBy" },
+    { label: "WAREHOUSE NAME", field: "warehouseName" },
+    { label: "ITEM LOCATION", field: "ItemLcoation" },
+    { label: "RETENTION PERIOD", field: "ReteionPeriod" },
+    { label: "EXPIRE DATE", field: "ExpireDate" },
+    { label: "IS DESTRUCTION OR EXTENSION", field: "isDestructionOrExtension" },
+    { label: "EXTENSION ON", field: "extensionDate" },
+    { label: "EXTENSION BY", field: "extensionBy" },
+    { label: "DESTRUCTION ON", field: "DestructionDate" },
+    { label: "DESTRUCTION BY", field: "DestructionBy" },
+  ];
 
-    if (!this.formattedData || this.formattedData.length === 0) {
-      console.warn("No data to download.");
-      return;
+  const data = this.formattedData ?? [];
+  if (!data.length) {
+    console.warn("No data to download.");
+    return;
+  }
+
+  // Escape a value properly for CSV (handles commas, quotes, newlines)
+  const escapeCSV = (value: any): string => {
+    if (value == null) return '';
+    let v = value;
+
+    // Try to format Dates as ISO (optional)
+    if (v instanceof Date) v = v.toISOString();
+    else if (typeof v === 'object') {
+      try { v = JSON.stringify(v); } catch { v = String(v); }
     }
 
-    // Add CSV rows
-    this.formattedData.forEach((row: any) => {
-      csvData +=
-        `${row.batchId ?? ''},` +
-        `${row.cartonNo ?? ''},` +
-        `${row.status ?? ''},` +
-        `${row.ItemStatus ?? ''},` +
-        `${row.DepartmentName ?? ''},` +
-        `${row.DepartmentCode ?? ''},` +
-        `${row.documents ?? ''},` +
-        `${row.DocumentDetails ?? ''},` +
-        `${row.InventoryBy ?? ''},` +
-        `${row.InventoryDate ?? ''},` +
-        `${row.approvedBy ?? ''},` +
-        `${row.approvedDate ?? ''},` +
-        `${row.RejectAt ?? ''},` +
-        `${row.rejectedBy ?? ''},` +
-        `${row.rejectedDate ?? ''},` +
-        `${row.warehouseEntryBy ?? ''},` +
-        `${row.warehouseEntryDate ?? ''},` +
-        `${row.InventoryAckBy ?? ''},` +
-        `${row.InventoryAckDate ?? ''},` +
-        `${row.pickupDate ?? ''},` +
-        `${row.warehouseLocationUpdatedDate ?? ''},` +
-        `${row.warehouseLocationUpdatedBy ?? ''},` +
+    v = String(v);
+    // If contains special characters, wrap in quotes and escape quotes
+    if (/[",\n\r]/.test(v)) {
+      v = '"' + v.replace(/"/g, '""') + '"';
+    }
+    return v;
+  };
 
-        `${row.warehouseName ?? ''},` +
-        `${row.ItemLcoation ?? ''},` +
-        `${row.ReteionPeriod ?? ''},` +
-        `${row.ExpireDate ?? ''},` +
-        `${row.isDestructionOrExtension ?? ''},` +
-        `${row.extensionDate ?? ''},` +
-        `${row.extensionBy ?? ''},` +
-        `${row.DestructionDate ?? ''},` +
-        `${row.DestructionBy ?? ''}\n`;
-    });
+  // Build CSV header
+  const csvRows: string[] = [];
+  csvRows.push(headers.map(h => escapeCSV(h.label)).join(','));
 
-    const blob = new Blob(['\ufeff' + csvData], { type: 'text/csv;charset=utf-8;' });
-    const dwldLink = document.createElement("a");
-    const url = URL.createObjectURL(blob);
+  // Build CSV body
+  data.forEach(row => {
+    const values = headers.map(h => escapeCSV(row[h.field]));
+    csvRows.push(values.join(','));
+  });
 
-    dwldLink.setAttribute("href", url);
-    dwldLink.setAttribute("download", filename + ".csv");
-    dwldLink.style.visibility = "hidden";
-    document.body.appendChild(dwldLink);
-    dwldLink.click();
-    document.body.removeChild(dwldLink);
-    this.logDownloadActivity();
-  }
+  // Combine with UTF-8 BOM for Excel compatibility
+  const csvString = '\ufeff' + csvRows.join('\n');
+
+  // Create and trigger download
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = `${filename}.csv`;
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  this.logDownloadActivity?.();
+}
+
 logDownloadActivity() {
   const payload = {
     pageName: 'Inventory Report',

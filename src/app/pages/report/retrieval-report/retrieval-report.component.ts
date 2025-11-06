@@ -63,7 +63,25 @@ export class RetrievalreportComponent implements OnInit {
     });
     this.prepareTableData([], []);
     this.getretrievalreport();
+    this.RetrievalReportForm.get('FromDate')?.valueChanges.subscribe(() => {
+      this.clearLogTable();
+    });
 
+    this.RetrievalReportForm.get('ToDate')?.valueChanges.subscribe(() => {
+      this.clearLogTable();
+    });
+
+  }
+
+    private clearLogTable() {
+    this.formattedData = [];
+    this.immutableFormattedData = [];
+    this._FilteredList = [];
+    this._StatusList = [];
+
+    this.first = 0;
+    this.loading = false;
+    this.rows = 10;
   }
 
   paginate(e) {
@@ -328,26 +346,26 @@ export class RetrievalreportComponent implements OnInit {
     }
   }
 
-logDownloadActivity() {
-  const payload = {
-    pageName: 'Retrieval Report',
-    activity: 'Download',
-    activityDescription: 'User downloaded the Retrieval Report',
-    entryBy: localStorage.getItem('UserID'),
-    User_Token: localStorage.getItem('User_Token')
-  };
+  logDownloadActivity() {
+    const payload = {
+      pageName: 'Retrieval Report',
+      activity: 'Download',
+      activityDescription: 'User downloaded the Retrieval Report',
+      entryBy: localStorage.getItem('UserID'),
+      User_Token: localStorage.getItem('User_Token')
+    };
 
-  const apiUrl = this._global.baseAPIUrl + "Role/InsertActivityDetail";
+    const apiUrl = this._global.baseAPIUrl + "Role/InsertActivityDetail";
 
-  this._onlineExamService.postData(payload, apiUrl).subscribe(
-    () => {
-      console.log("InsertActivityDetail API call successful."); 
-    },
-    (error) => {
-      console.error("InsertActivityDetail API call failed:", error); 
-    }
-  );
-}
+    this._onlineExamService.postData(payload, apiUrl).subscribe(
+      () => {
+        console.log("InsertActivityDetail API call successful.");
+      },
+      (error) => {
+        console.error("InsertActivityDetail API call failed:", error);
+      }
+    );
+  }
 
 
   GetHeaderNames() {

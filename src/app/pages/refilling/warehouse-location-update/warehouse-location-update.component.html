@@ -1,5 +1,4 @@
-
-  <div class="header pb-6">
+<div class="header pb-6">
   <div class="container-fluid">
     <div class=" header-body">
       <div class=" row align-items-center py-4">
@@ -21,11 +20,11 @@
     </div>
   </div>
 </div>
-  <div class="container-fluid mt--6">
-    <div class="row">
-      <div class="col">
-        <div class="card">
-          <!-- <div class="card-header p-0 px-4 pt-2">
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <!-- <div class="card-header p-0 px-4 pt-2">
             <div
               class="p-0 w-100 d-flex justify-content-between align-items-center"
             >
@@ -36,130 +35,91 @@
             </div>
           </div> -->
 
-          <div class="dataTables_wrapper py-4 checklist-table">
-            <p-table
-              [paginator]="true"
-              [rows]="10"
-              [value]="formattedData"
-              [autoLayout]="true"
-              [showCurrentPageReport]="true"
-              [rowsPerPageOptions]="[10, 25, 50, 100]"
-              [(first)]="first"
-              (onPage)="paginate($event)"
-              [loading]="loading"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-            >
-              <ng-template pTemplate="caption">
-                <input
-                  type="text"
-                  pInputText
-                  size="50"
-                  class="form-control"
-                  placeholder="Search records"
-                  (input)="searchTable($event)"
-                  class="global-search search"
-                />
-              </ng-template>
-                         <ng-template pTemplate="header">
-  <tr>
-    <!-- ACTION column first -->
-    <th style="width: 10%; white-space: nowrap">ACTION</th>
- 
-    <!-- SR NO column -->
-    <th style="width: 10%; white-space: nowrap">SR NO</th>
- 
-    <!-- Dynamic columns -->
-    <th
-      *ngFor="let col of headerList; let i = index"
-      [ngStyle]="i == 0 && { width: '5%' }"
-      style="white-space: nowrap"
-    >
-      {{ col.header }}
-    </th>
-  </tr>
-</ng-template>
- 
-<ng-template pTemplate="body" let-car let-rowIndex="rowIndex">
-  <tr>
-    <!-- ACTION column first -->
-    <td style="white-space: nowrap">
-      <a
-        type="button"
-       style="padding:0 3px 5px 4px; border-radius: 50%; background-color: white;"
-        class="btn btn-icon btn-icon-only"
-        [routerLink]="['/Refiling/warehouse-location-update', car.requestNumber]"
-      >
-        <span class="btn-inner--icon"><i class="fa fa-plus"></i></span>
-      </a>
-    </td>
- 
-    <!-- SR NO -->
-    <td>
-      {{ car["srNo"] }}
-    </td>
- 
-    <!-- Dynamic data fields -->
-      <td *ngFor="let col of headerList" style="white-space: nowrap">
-                <ng-container *ngIf="col.field === 'status'; else normalCell">
-                  <span class="status-badge" [ngClass]="getStatusClass(car[col.field])">
+        <div class="dataTables_wrapper py-4 checklist-table">
+          <p-table [paginator]="true" [rows]="10" [value]="formattedData" [autoLayout]="true"
+            [showCurrentPageReport]="true" [rowsPerPageOptions]="[10, 25, 50, 100]" [(first)]="first"
+            (onPage)="paginate($event)" [loading]="loading"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+            <ng-template pTemplate="caption">
+              <input type="text" pInputText size="50" class="form-control" placeholder="Search records"
+                (input)="searchTable($event)" class="global-search search" />
+            </ng-template>
+            <ng-template pTemplate="header">
+              <tr>
+                <!-- ACTION column first -->
+                <th style="width: 10%; white-space: nowrap">ACTION</th>
+
+                <!-- SR NO column -->
+                <th style="width: 10%; white-space: nowrap">SR NO</th>
+
+                <!-- Dynamic columns -->
+                <th *ngFor="let col of headerList; let i = index" [ngStyle]="i == 0 && { width: '5%' }"
+                  style="white-space: nowrap">
+                  {{ col.header }}
+                </th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-car let-rowIndex="rowIndex">
+              <tr>
+                <!-- ACTION column first -->
+                <td style="white-space: nowrap">
+                  <a type="button" style="padding:0 3px 5px 4px; border-radius: 50%; background-color: white;"
+                    class="btn btn-icon btn-icon-only"
+                    [routerLink]="['/Refiling/warehouse-location-update', car.requestNumber]">
+                    <span class="btn-inner--icon"><i class="fa fa-plus"></i></span>
+                  </a>
+                </td>
+
+                <!-- SR NO -->
+                <td>
+                  {{ car["srNo"] }}
+                </td>
+
+                <!-- Dynamic data fields -->
+                <td *ngFor="let col of headerList" style="white-space: nowrap">
+                  <ng-container *ngIf="col.field === 'status'; else normalCell">
+                    <span class="status-badge" [ngClass]="getStatusClass(car[col.field])">
+                      {{ car[col.field] }}
+                    </span>
+                  </ng-container>
+                  <ng-template #normalCell>
                     {{ car[col.field] }}
-                  </span>
-                </ng-container>
-                <ng-template #normalCell>
-                  {{ car[col.field] }}
-                </ng-template>
-              </td>
-  </tr>
-</ng-template>
- 
-            </p-table>
-          </div>
+                  </ng-template>
+                </td>
+              </tr>
+            </ng-template>
+
+          </p-table>
         </div>
       </div>
     </div>
   </div>
+</div>
 
 
 <ng-template #InventoryPopup let-c="close" let-d="dismiss" let-modal>
   <div class="modal-content">
     <div class="modal-body p-0">
       <!-- <div class="card"> -->
-        <div class="card-header">
-          <h3 class="mb-0">View Batch Details</h3>
+      <div class="card-header">
+        <h3 class="mb-0">View Batch Details</h3>
         <!-- </div> -->
         <div class="card-body">
           <div class="dataTables_wrapper py-4 checklist-table">
-            <p-table
-              [paginator]="true"
-              [rows]="10"
-              [value]="formattedData1"
-              [autoLayout]="true"
-              [showCurrentPageReport]="true"
-              [rowsPerPageOptions]="[10, 25, 50, 100]"
-              [(first)]="first1"
-              (onPage)="paginate1($event)"
-              [loading]="loading"
-              currentPageReportTemplate="Showing {first1} to {last} of {totalRecords} entries"
-            >
+            <p-table [paginator]="true" [rows]="10" [value]="formattedData1" [autoLayout]="true"
+              [showCurrentPageReport]="true" [rowsPerPageOptions]="[10, 25, 50, 100]" [(first)]="first1"
+              (onPage)="paginate1($event)" [loading]="loading"
+              currentPageReportTemplate="Showing {first1} to {last} of {totalRecords} entries">
               <ng-template pTemplate="caption">
-                <input
-                  type="text"
-                  pInputText
-                  size="50"
-                  class="form-control"
-                  placeholder="Search records"
-                  (input)="searchTable1($event)"
-                  class="global-search search"
-                />
+                <input type="text" pInputText size="50" class="form-control" placeholder="Search records"
+                  (input)="searchTable1($event)" class="global-search search" />
               </ng-template>
               <ng-template pTemplate="header">
                 <tr>
                   <th style="width: 10%" style="white-space: nowrap">SR NO</th>
-                  <th
-                    *ngFor="let col of headerList1; let i = index"
-                    [ngStyle]="i == 0 && { width: '5%' }"
-                    style="white-space: nowrap"
-                  >
+                  <th *ngFor="let col of headerList1; let i = index" [ngStyle]="i == 0 && { width: '5%' }"
+                    style="white-space: nowrap">
                     {{ col.header }}
                   </th>
                 </tr>
@@ -169,23 +129,23 @@
                   <td>
                     {{ car["srNo"] }}
                   </td>
-                   <td *ngFor="let col of headerList1" style="white-space: nowrap">
-                <ng-container *ngIf="col.field === 'status'; else normalCell">
-                  <span class="status-badge" [ngClass]="getStatusClass1(car[col.field])">
-                    {{ car[col.field] }}
-                  </span>
-                </ng-container>
-                <ng-template #normalCell>
-                  {{ car[col.field] }}
-                </ng-template>
-              </td>
+                  <td *ngFor="let col of headerList1" style="white-space: nowrap">
+                    <ng-container *ngIf="col.field === 'status'; else normalCell">
+                      <span class="status-badge" [ngClass]="getStatusClass1(car[col.field])">
+                        {{ car[col.field] }}
+                      </span>
+                    </ng-container>
+                    <ng-template #normalCell>
+                      {{ car[col.field] }}
+                    </ng-template>
+                  </td>
                 </tr>
               </ng-template>
             </p-table>
           </div>
         </div>
       </div>
-    <!-- </div> -->
-  </div>
+      <!-- </div> -->
+    </div>
   </div>
 </ng-template>

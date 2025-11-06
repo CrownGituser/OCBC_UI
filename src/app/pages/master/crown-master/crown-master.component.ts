@@ -6,6 +6,8 @@ import { FormGroup, FormBuilder, Validators, ValidationErrors, AbstractControl, 
 import { ToastrService } from "ngx-toastr";
 import swal, { SweetAlertResult } from "sweetalert2";
 import { ThirdPartyDraggable } from "@fullcalendar/interaction";
+import { saveAs } from 'file-saver';
+import * as XLSX from "xlsx";
 import Swal from "sweetalert2";
 export enum SelectionType {
   single = "single",
@@ -104,7 +106,8 @@ notOnlyNumberValidator(control: FormControl) {
   const onlyNumber = /^\d+$/.test(value);
 
   // only allowed characters check
-  const hasInvalidChar = /[^\p{L}\p{N}()\s\/-]/u.test(value);
+  //const hasInvalidChar = /[^\p{L}\p{N}()\s\/-]/u.test(value);
+    const hasInvalidChar = /,/.test(value);
 
   // check if it contains at least one letter or number
   const hasLetterOrNumber = /[\p{L}\p{N}]/u.test(value);
@@ -617,39 +620,43 @@ notOnlyNumberValidator(control: FormControl) {
     return match ? parseInt(match[0], 10) : null;
   }
 
-  downloadCSV() {
-    const data = this.dt?.filteredValue || this.formattedData;
 
-    if (!data || data.length === 0) {
-      alert("No data available to export.");
-      return;
-    }
+downloadCSV() {
+  const data = this.dt?.filteredValue || this.formattedData;
 
-    const headers = this.headerList.map(h => h.header);
-
-    const rows = data.map(row =>
-      this.headerList.map(col => {
-        let val = row[col.field];
-        return val !== null && val !== undefined ? String(val).replace(/"/g, '""') : ""; // Escape quotes
-      })
-    );
-
-    const csvContent =
-      headers.join(",") +
-      "\n" +
-      rows.map(r => r.map(x => `"${x}"`).join(",")).join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "DocumentList.csv");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    this.logDownloadActivity();
+  if (!data || data.length === 0) {
+    alert("No data available to export.");
+    return;
   }
+
+  const headers = this.headerList.map(h => h.header);
+  const rows = data.map(row =>
+    this.headerList.map(col => {
+      let val = row[col.field];
+      return val !== null && val !== undefined ? String(val).replace(/"/g, '""') : "";
+    })
+  );
+
+  const csvContent =
+    headers.join(",") +
+    "\n" +
+    rows.map(r => r.map(x => `"${x}"`).join(",")).join("\n");
+
+
+  const BOM = "\uFEFF";
+  const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", "DocumentList.csv");
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  this.logDownloadActivity();
+}
+
 
 logDownloadActivity() {
   const payload = {
@@ -900,6 +907,7 @@ logDownloadActivity() {
 
 
   addDocumentType(template: TemplateRef<any>) {
+    debugger;
     this.submitted = false;
     this.isEditModeDoc = false;
 

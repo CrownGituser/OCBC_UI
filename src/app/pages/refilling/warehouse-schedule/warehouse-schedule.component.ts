@@ -56,7 +56,7 @@ export class WarehouseScheduleComponent implements OnInit {
     private _onlineExamService: OnlineExamServiceService,
     private _global: Globalconstants,
     private dialog: MatDialog
-  ) {}
+  ) { }
   ngOnInit() {
     const today = new Date();
     this.todayDate = today.toISOString().split("T")[0];
@@ -64,7 +64,7 @@ export class WarehouseScheduleComponent implements OnInit {
     this.pickupForm = this.formBuilder.group({
       requestNumber: ["", Validators.required],
       pickUpDate: ["", [Validators.required, this.pickupDateValidator]],
-remark: ["", [Validators.required, this.noWhitespaceValidator]],
+      remark: ["", [Validators.required, this.noWhitespaceValidator]],
       User_Token: localStorage.getItem("User_Token"),
       CreatedBy: localStorage.getItem("UserID"),
     });
@@ -78,9 +78,9 @@ remark: ["", [Validators.required, this.noWhitespaceValidator]],
   }
 
   noWhitespaceValidator(control: FormControl) {
-  const isWhitespace = (control.value || '').trim().length === 0;
-  return !isWhitespace ? null : { required: true };
-}
+    const isWhitespace = (control.value || '').trim().length === 0;
+    return !isWhitespace ? null : { required: true };
+  }
   prepareTableData1(tableData, headerList) {
     let formattedData = [];
     let tableHeader: any = [
@@ -94,7 +94,7 @@ remark: ["", [Validators.required, this.noWhitespaceValidator]],
       { field: "WarehouseName", header: "WAREHOUSE NAME", index: 4 },
 
       { field: "detailLocation", header: "DETAIL LOCATION", index: 4 },
-                  { field: "status", header: "CARTON STATUS", index: 3 },//GKJ_09_01
+      { field: "status", header: "CARTON STATUS", index: 3 },//GKJ_09_01
 
     ];
     tableData.forEach((el, index) => {
@@ -147,7 +147,7 @@ remark: ["", [Validators.required, this.noWhitespaceValidator]],
     this.pickupForm = this.formBuilder.group({
       requestNumber: [car.requestNumber, Validators.required],
       pickUpDate: ["", Validators.required],
-      remark:["", Validators.required],
+      remark: ["", Validators.required],
       User_Token: localStorage.getItem("User_Token"),
       CreatedBy: localStorage.getItem("UserID"),
     });
@@ -262,9 +262,8 @@ remark: ["", [Validators.required, this.noWhitespaceValidator]],
               tapToDismiss: false,
               titleClass: "alert-title",
               positionClass: "toast-top-center",
-              toastClass: `ngx-toastr alert alert-dismissible ${
-                isSuccess ? "alert-success" : "alert-danger"
-              } alert-notify`,
+              toastClass: `ngx-toastr alert alert-dismissible ${isSuccess ? "alert-success" : "alert-danger"
+                } alert-notify`,
             }
           );
 
@@ -350,7 +349,7 @@ remark: ["", [Validators.required, this.noWhitespaceValidator]],
       this.prepareTableData(this._FilteredList, this._IndexPendingList);
     });
   }
-  getRequestNo() {}
+  getRequestNo() { }
 
   toggleValidators() {
     const mainFileCountControl = this.pickupForm.get("main_file_count");
@@ -403,7 +402,7 @@ remark: ["", [Validators.required, this.noWhitespaceValidator]],
       { field: "requestNumber", header: "RETURN REQUEST ID", index: 1 },
       { field: "department", header: "DEPARTMENT", index: 1 },
       { field: "noofcartons", header: "NO OF CARTONS", index: 1 },
-            { field: "status", header: "RETURN STATUS", index: 3 },
+      { field: "status", header: "RETURN STATUS", index: 3 },
 
       { field: "returnBy", header: "RETURN REQUEST BY", index: 1 },
       { field: "returnDate", header: "RETURN REQUEST ON", index: 1 },
@@ -534,8 +533,8 @@ remark: ["", [Validators.required, this.noWhitespaceValidator]],
   showmessage(data: any) {
     this.toastr.show(
       '<div class="alert-text"</div> <span class="alert-title" data-notify="title">Validation ! </span> <span data-notify="message"> ' +
-        data +
-        " </span></div>",
+      data +
+      " </span></div>",
       "",
       {
         timeOut: 3000,
@@ -550,33 +549,33 @@ remark: ["", [Validators.required, this.noWhitespaceValidator]],
     );
   }
 
-getStatusClass(status: string) { // gkj 01-08
-  if (!status) return 'status-badge status-default';
- 
-  switch (status.toUpperCase()) {
-    case 'RETURN REQUEST APPROVED':
-      return 'status-badge status-accepted'; // green
-    case 'RETURN REQUEST CLOSED':
-      return 'status-badge status-review';   // yellow
-    default:
-      return 'status-badge status-default';  // grey-blue
-  }
-}
- 
- 
- 
-getStatusClass1(status: string) { // gkj 01-08
-  if (!status) return 'status-badge status-default';
- 
-  switch (status.trim().toUpperCase()) {
+  getStatusClass(status: string) { // gkj 01-08
+    if (!status) return 'status-badge status-default';
+
+    switch (status.toUpperCase()) {
       case 'RETURN REQUEST APPROVED':
-      return 'status-badge status-accepted'; // green
-    case 'RETRIEVAL REQUEST':
-      return 'status-badge status-review'; // yellow
-    case 'CARTON INV NOT RECEIVED':
-      return 'status-badge status-rejected'; // red
-    default:
-      return 'status-badge status-default'; // grey-blue
+        return 'status-badge status-accepted'; // green
+      case 'RETURN REQUEST CLOSED':
+        return 'status-badge status-review';   // yellow
+      default:
+        return 'status-badge status-default';  // grey-blue
+    }
   }
-}
+
+
+
+  getStatusClass1(status: string) { // gkj 01-08
+    if (!status) return 'status-badge status-default';
+
+    switch (status.trim().toUpperCase()) {
+      case 'RETURN REQUEST APPROVED':
+        return 'status-badge status-accepted'; // green
+      case 'RETRIEVAL REQUEST':
+        return 'status-badge status-review'; // yellow
+      case 'CARTON INV NOT RECEIVED':
+        return 'status-badge status-rejected'; // red
+      default:
+        return 'status-badge status-default'; // grey-blue
+    }
+  }
 }

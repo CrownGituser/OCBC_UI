@@ -159,7 +159,7 @@
                   </div>
                   <div *ngIf="FormControls['detailDocType'].hasError('specialCharacterNotAllowed')">
                     * Special characters are not allowed. Allowed: letters (including non-Latin like Chinese), numbers,
-                    spaces, "(", ")", "-" and "/".
+                    spaces, cannot allows ","
                   </div>
 
                 </div>
@@ -305,8 +305,8 @@
                   <div
                     *ngIf="FormControls['branch_name'].hasError('onlyNumber') || FormControls['branch_name'].hasError('specialCharacterNotAllowed')">
                     * Invalid input. Document Type cannot be only numbers and may only contain letters (including
-                    non-Latin), numbers, spaces,
-                    "(", ")", "-", "/".
+                    non-Latin), numbers, spaces, cannot allows ","
+        
                   </div>
 
 

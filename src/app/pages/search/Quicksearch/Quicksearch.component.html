@@ -41,7 +41,7 @@
                   <option value="7">ITEM STATUS</option>
                   <option value="8">ITEM LOCATION</option>
                   <option value="9">WAREHOUSE NAME </option> -->
-                  <option value="10">RETENTION PERIOD</option>
+                  <!-- <option value="10">RETENTION PERIOD</option> -->
                 </select>
               </div>
               <div class="col-md-4">
@@ -97,39 +97,29 @@
               <ng-template pTemplate="body" let-car let-rowIndex="rowIndex">
                 <tr>
                   <td style="white-space: nowrap; width: 5%">
-                    <button
-                      type="button"
-                      class="btn btn-icon btn-icon-only"
-                      [disabled]="(car?.ItemStatus !== 'IN' || !editRights)"
-                      (click)="editBranch(BranchFormPopup, car)"
-                    >
-                      <span class="btn-inner--icon">
-                        <i class="fa fa-pen" style="font-size: 15px"></i>
-                      </span>
-                    </button>
-                    <!-- <button type="button" class="btn btn-icon btn-icon-only" [disabled]="!editRights"
+                    <button type="button" class="btn btn-icon btn-icon-only"
+                      [disabled]="(car?.ItemStatus !== 'IN' || !editRights || car?.Status === 'Carton Inv Rejected')"
                       (click)="editBranch(BranchFormPopup, car)">
                       <span class="btn-inner--icon">
                         <i class="fa fa-pen" style="font-size: 15px"></i>
                       </span>
-                    </button> -->
+                    </button>
 
-
-                    <button type="button" class="btn btn-icon btn-icon-only mr-2" [routerLink]="[
-                        '/search/item-history',
-                        car['CartonNo'],
-                        'RetrievalHistory'
-                      ]" title="History">
+                    <button type="button" class="btn btn-icon btn-icon-only mr-2"
+                      [routerLink]="['/search/item-history', car['CartonNo'], 'QuickSearchHistory']"
+                      [disabled]="car?.Status === 'Carton Inv Rejected'" title="History">
                       <span class="btn-inner--icon">
                         <i class="fa fa-eye" style="font-size: 15px"></i>
                       </span>
                     </button>
 
                     <button type="button" style="border: none" class="btn btn-icon btn-icon-only"
-                      [disabled]="car.isInsertionAvailable == 0" title="Insertion History">
+                      [disabled]="car.isInsertionAvailable == 0 || car?.Status === 'Carton Inv Rejected'"
+                      title="Insertion History">
                       <i class="fa fa-history" style="font-size: 15px"></i>
                     </button>
                   </td>
+
                   <td *ngFor="let col of selectedColumns" style="white-space: nowrap">
                     <ng-container *ngIf="['status','Status','ItemStatus'].includes(col.field); else normalCell">
                       <ng-container *ngIf="car[col.field]; else emptyStatus">

@@ -67,25 +67,36 @@ export class ItemstatusreportComponent implements OnInit {
     private _global: Globalconstants
   ) { }
 
-  ngOnInit() {
-    this.currentDate = new Date();
-    this.RefillingReportForm = this.formBuilder.group({
-      ToDate: [],
-      FromDate: [],
-      status: [0],
-      SearchBy: [""],
-      User_Token: localStorage.getItem("User_Token"),
-      createdBy: localStorage.getItem("UserID"),
-    });
+ngOnInit() {
+  this.currentDate = new Date();
+  this.RefillingReportForm = this.formBuilder.group({
+    ToDate: [],
+    FromDate: [],
+    status: [0],
+    SearchBy: [""],
+    User_Token: localStorage.getItem("User_Token"),
+    createdBy: localStorage.getItem("UserID"),
+  });
 
-    this.RefillingReportForm.controls['status'].setValue(0);
-    this.prepareTableData([], [])
+  this.RefillingReportForm.controls['status'].setValue(0);
+  this.prepareTableData([], []);
+  this.getreffilingreport();
+  this.GetItemstatusreportList();
+  this.downloadEnabled = false;
+  this.getWarehouseList();
 
-    this.getreffilingreport();
-    this.GetItemstatusreportList();
-    this.downloadEnabled = false;
-    this.getWarehouseList();
-  }
+  this.RefillingReportForm.get('SearchBy')?.valueChanges.subscribe(() => {
+    this.clearTable();
+  });
+}
+
+clearTable() {
+  this.formattedData = [];
+  this.immutableFormattedData = [];
+  this._FilteredList = [];
+  this._StatusList = [];
+   this.first = 0;
+}
 
   paginate(e) {
     //this.first = e.first;
@@ -583,6 +594,83 @@ export class ItemstatusreportComponent implements OnInit {
     document.body.removeChild(dwldLink);
     this.logDownloadActivity();
   }
+
+
+  downloadXlsxVisible(filename = 'Warehouse Location Report', onlyCurrentPage = false) {
+
+  let cols = (this.selectedColumns?.length ? this.selectedColumns : this.headerList) || [];
+
+
+  cols = cols.filter((c: any) =>
+    (c.header ?? '').toString().trim().toLowerCase() !== 'sr no'
+  );
+
+  if (!cols.length) {
+    console.warn('No columns available to export.');
+    return;
+  }
+
+ 
+  const allRows = this.formattedData || [];
+  const rows = onlyCurrentPage
+    ? allRows.slice(this.first, Math.min(this.first + this.rows, allRows.length))
+    : allRows;
+
+  if (!rows.length) {
+    console.warn('No data to export.');
+    return;
+  }
+
+  const getByPath = (obj: any, path: string) =>
+    path.split('.').reduce((acc: any, k: string) => (acc == null ? acc : acc[k]), obj);
+
+  const isLikelyISODate = (s: any) =>
+    typeof s === 'string' && /^\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z?)?$/.test(s);
+
+  const normalizeValue = (v: any) => {
+    if (v == null) return '';
+    if (typeof v === 'string' && isLikelyISODate(v)) {
+      const d = new Date(v);
+      if (!isNaN(d.getTime())) return d;
+    }
+    if (typeof v === 'object') {
+      try { return JSON.stringify(v); } catch { return String(v); }
+    }
+    return v;
+  };
+
+  const exportRows = rows.map((row: any) => {
+    const out: any = {};
+    cols.forEach((c: any) => {
+      const field = c.field ?? c;
+      const header = c.header ?? String(field);
+      const value = typeof field === 'string' && field.includes('.')
+        ? getByPath(row, field)
+        : row[field];
+      out[header] = normalizeValue(value);
+    });
+    return out;
+  });
+
+  const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(exportRows, { cellDates: true });
+  const headers = Object.keys(exportRows[0] || {});
+  ws['!cols'] = headers.map((h) => {
+    const maxLen = exportRows.reduce((m, r) => {
+      const v = r[h];
+      const s = v instanceof Date ? v.toISOString() : (v == null ? '' : String(v));
+      return Math.max(m, s.length);
+    }, h.length);
+    return { wch: Math.min(Math.max(maxLen + 2, 10), 60) };
+  });
+
+  const wb: XLSX.WorkBook = { Sheets: { data: ws }, SheetNames: ['data'] };
+  const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([buf], { type: 'application/octet-stream' });
+  FileSaver.saveAs(blob, `${filename}.xlsx`);
+
+  this.logDownloadActivity?.();
+}
+
 
   logDownloadActivity() {
     const payload = {

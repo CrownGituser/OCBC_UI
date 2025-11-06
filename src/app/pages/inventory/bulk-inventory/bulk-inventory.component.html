@@ -33,9 +33,10 @@
                         (FormControls['department'].touched || submitted)
                     }">
                   <option value="" disabled selected>--Select--</option>
-                  <option *ngFor="let i of departmentDropdown" value="{{ i.value }}">
+                  <option *ngFor="let i of departmentDropdown" [ngValue]="i.value">
                     {{ i.label }}
                   </option>
+
                 </select>
                 <div *ngIf="
                       FormControls['department'].invalid &&
@@ -53,40 +54,35 @@
                 <label for="BatchID">Upload File</label>
               </div>
               <div class="col-3">
-                <input id="csvReader"  name="appl" type="file" accept=".csv" (change)="onFileSelected($event);uploadListener($event)" type="file"
+                <input id="csvReader" name="appl" type="file" accept=".csv"
+                  (change)="onFileSelected($event);uploadListener($event)" type="file"
                   class="form-control form-control-md" />
               </div>
 
             </div>
-          <div class="float-right py-3 mt-3">
-  <a 
-    class="btn btn-outline-success"
-    [class.disabled]="AddFileInwardForm.invalid"
-    [style.pointer-events]="AddFileInwardForm.invalid ? 'none' : 'auto'"
-    (click)="!AddFileInwardForm.invalid && SaveData()">
-    Save
-  </a>
+            <div class="float-right py-3 mt-3">
+              <a class="btn btn-outline-success" [class.disabled]="AddFileInwardForm.invalid"
+                [style.pointer-events]="AddFileInwardForm.invalid ? 'none' : 'auto'"
+                (click)="!AddFileInwardForm.invalid && SaveData()">
+                Save
+              </a>
 
-  <a 
-    class="btn btn-outline-primary"
-    (click)="onSubmit()">
-    Back
-  </a>
+              <a class="btn btn-outline-primary" (click)="onSubmit()">
+                Back
+              </a>
 
-  <!-- <a class="btn btn-sm btn-neutral" (click)="OnReset()">Reset</a> -->
+              <!-- <a class="btn btn-sm btn-neutral" (click)="OnReset()">Reset</a> -->
 
-  <!-- <a 
+              <!-- <a 
     class="btn btn-outline-danger"
     (click)="CloseRequest()">
     Close Batch
   </a> -->
 
-  <a 
-    class="btn btn-sm btn-neutral btn-grey-hover ml-2"
-    (click)="downloadCSV()">
-    Download Format
-  </a>
-</div>
+              <a class="btn btn-sm btn-neutral btn-grey-hover ml-2" (click)="downloadCSV()">
+                Download Format
+              </a>
+            </div>
 
           </form>
         </div>
@@ -96,39 +92,39 @@
 </div>
 
 <div class="container-fluid mt--3">
-<p-table [paginator]="true" [rows]="10" [value]="formattedData" [autoLayout]="true" [showCurrentPageReport]="true"
-  [rowsPerPageOptions]="[10, 25, 50, 100]" [(first)]="first" (onPage)="paginate($event)" [loading]="loading"
-  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
-  <ng-template pTemplate="caption">
-    <input type="text" pInputText size="50" placeholder="Search records" (input)="searchTable($event)"
-      class="global-search search" />
-  </ng-template>
-   <ng-template pTemplate="header">
-  <tr>
-    <!-- <th style="width: 5%; white-space: nowrap">ACTION</th> -->
-    <th *ngFor="let col of headerList; let i = index" [ngStyle]="i == 0 && { width: '5%' }">
-      {{ col.header }}
-    </th>
-  </tr>
-</ng-template>
- 
-<ng-template pTemplate="body" let-car let-rowIndex="rowIndex">
-  <tr>
-    <!-- ACTION column first -->
-    <!-- <td style="white-space: nowrap">
+  <p-table [paginator]="true" [rows]="10" [value]="formattedData" [autoLayout]="true" [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[10, 25, 50, 100]" [(first)]="first" (onPage)="paginate($event)" [loading]="loading"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+    <ng-template pTemplate="caption">
+      <input type="text" pInputText size="50" placeholder="Search records" (input)="searchTable($event)"
+        class="global-search search" />
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <!-- <th style="width: 5%; white-space: nowrap">ACTION</th> -->
+        <th *ngFor="let col of headerList; let i = index" [ngStyle]="i == 0 && { width: '5%' }">
+          {{ col.header }}
+        </th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-car let-rowIndex="rowIndex">
+      <tr>
+        <!-- ACTION column first -->
+        <!-- <td style="white-space: nowrap">
       <a type="button"
          style="padding:0 0 5px 4px; border-radius: 50%; background-color: white;"
          class="btn btn-icon btn-icon-only" (click)="DeleteRecord(car)">
         <span class="btn-inner--icon"><i class="fa fa-trash"></i></span>
       </a>
     </td> -->
- 
-    <!-- Data columns -->
-    <td *ngFor="let col of headerList">
-      {{ car[col.field] }}
-    </td>
-  </tr>
-</ng-template>
- 
-</p-table>
+
+        <!-- Data columns -->
+        <td *ngFor="let col of headerList">
+          {{ car[col.field] }}
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
 </div>

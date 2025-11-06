@@ -63,6 +63,8 @@ export class RefillingreportComponent implements OnInit {
     private _onlineExamService: OnlineExamServiceService,
     private _global: Globalconstants
   ) { }
+
+
   ngOnInit() {
     this.currentDate = new Date();
 
@@ -77,8 +79,28 @@ export class RefillingreportComponent implements OnInit {
 
     this.prepareTableData([], []);
     this.GetRefillingReport();
+   
+
+    this.RefillingReportForm.get('FromDate')?.valueChanges.subscribe(() => {
+      this.clearLogTable();
+    });
+
+    this.RefillingReportForm.get('ToDate')?.valueChanges.subscribe(() => {
+      this.clearLogTable();
+    });
   }
 
+
+  private clearLogTable() {
+    this.formattedData = [];
+    this.immutableFormattedData = [];
+    this._FilteredList = [];
+    this._StatusList = [];
+
+    this.first = 0;
+    this.loading = false;
+    this.rows = 10;
+  }
   paginate(e) {
     this.first = e.first;
     this.rows = e.rows;
@@ -325,7 +347,7 @@ export class RefillingreportComponent implements OnInit {
     }
 
     const tableHeader: any[] = [
-    
+
       { field: 'srNo', header: "SR NO", index: 1 },
       { field: "requestNumber", header: "RETURN REQUEST ID", index: 1 },
       { field: "CartonNo", header: "CARTON NO", index: 1 },
@@ -382,7 +404,7 @@ export class RefillingreportComponent implements OnInit {
     FileSaver.saveAs(blob, fileName + ".xlsx");
   }
 
-    logDownloadActivity() {
+  logDownloadActivity() {
     const payload = {
       pageName: 'Refilling Report',
       activity: 'Download',

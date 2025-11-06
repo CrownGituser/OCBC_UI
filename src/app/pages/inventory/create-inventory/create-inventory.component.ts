@@ -31,17 +31,19 @@ export function noSpaceValidator(): ValidatorFn {
     return hasSpace ? { noSpace: true } : null;
   };
 }
+
 export function noSpecialCharExceptAllowed(): ValidatorFn {
   return (control: AbstractControl): { [key: string]: any } | null => {
     const value = control.value;
     if (!value) return null;
 
-   
-    const valid = /^[a-zA-Z0-9\-\/()]+$/.test(value);
+    // Allow everything except commas
+    const valid = /^[^,]*$/.test(value);
 
     return valid ? null : { invalidCharacters: true };
   };
 }
+
 @Component({
   selector: "app-create-inventory",
   templateUrl: "./create-inventory.component.html",

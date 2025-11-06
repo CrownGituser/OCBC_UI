@@ -380,7 +380,7 @@ export class UsersComponent implements OnInit {
             this.AddUserForm.get('email')?.setErrors({ duplicate: true });
           }
           debugger;
-           if (msg.toLowerCase().includes("User is Deleted. NO action can be performed.")) {
+          if (msg.toLowerCase().includes("User is Deleted. NO action can be performed.")) {
             this.AddUserForm.get('User')?.setErrors({ duplicate: true });
           }
           return;
@@ -414,7 +414,7 @@ export class UsersComponent implements OnInit {
     this.User = "Edit User Details";
 
     console.log("value", value);
-  
+
     const apiUrl =
       this._global.baseAPIUrl +
       "Admin/GetDetails?ID=" +
@@ -449,7 +449,7 @@ export class UsersComponent implements OnInit {
 
   deleteEmployee(user: any) {
     debugger;
-   
+
     const currentUserId = localStorage.getItem('UserID');
 
     if (user.id !== currentUserId) {
@@ -508,65 +508,70 @@ export class UsersComponent implements OnInit {
     }
   }
 
+  downloadCSV() {
+    const data = this.dt?.filteredValue || this.formattedData;
+
+    if (!data || data.length === 0) {
+      this.toastr.warning("No data available to export.");
+      return;
+    }
 
 
-downloadCSV() {
-  const data = this.dt.filteredValue || this.formattedData;
+    const headers = this.headerList.map(h => h.header);
 
-  if (!data || data.length === 0) {
-    this.toastr.warning("No data available to export.");
-    return;
+    const rows = data.map(row =>
+      this.headerList.map(col => {
+        let val = row[col.field];
+        return val !== null && val !== undefined ? String(val).replace(/"/g, '""') : "";
+      })
+    );
+    let csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map(r => r.map(x => `"${x}"`).join(",")).join("\n");
+
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = "UsersList.csv";
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+
+
+    link.click();
+
+
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+
+    this.logDownloadActivity();
   }
 
-  const headers = this.headerList.map(h => h.header);
 
-  const rows = data.map(row =>
-    this.headerList.map(col => {
-      let val = row[col.field];
-      return val !== null && val !== undefined ? val : "";
-    })
-  );
+  logDownloadActivity() {
+    const payload = {
+      pageName: 'Users',
+      activity: 'Download',
+      activityDescription: 'User downloaded the UsersList CSV',
+      entryBy: localStorage.getItem('UserID'),
+      User_Token: localStorage.getItem('User_Token')
+    };
 
-  let csvContent =
-    headers.join(",") +
-    "\n" +
-    rows.map(r => r.map(x => `"${x}"`).join(",")).join("\n");
+    const apiUrl = this._global.baseAPIUrl + "Role/InsertActivityDetail";
 
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-  link.setAttribute("href", url);
-  link.setAttribute("download", "UsersList.csv");
-  link.style.visibility = "hidden";
-  document.body.appendChild(link);
-
-  link.click();
-  document.body.removeChild(link);
-
- 
-  this.logDownloadActivity();
-}
-
-logDownloadActivity() {
-  const payload = {
-    pageName: 'Users',
-    activity: 'Download',
-    activityDescription: 'User downloaded the UsersList CSV',
-    entryBy: localStorage.getItem('UserID'),
-    User_Token: localStorage.getItem('User_Token')
-  };
-
-  const apiUrl = this._global.baseAPIUrl + "Role/InsertActivityDetail";
-
-  this._onlineExamService.postData(payload, apiUrl).subscribe(
-    () => {
-      console.log("InsertActivityDetail API call successful."); 
-    },
-    (error) => {
-      console.error("InsertActivityDetail API call failed:", error); 
-    }
-  );
-}
+    this._onlineExamService.postData(payload, apiUrl).subscribe(
+      () => {
+        console.log("InsertActivityDetail API call successful.");
+      },
+      (error) => {
+        console.error("InsertActivityDetail API call failed:", error);
+      }
+    );
+  }
 
 
 
